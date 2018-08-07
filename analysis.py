@@ -57,24 +57,35 @@ class Analyzer(Frame):
 		elif keyword == '':
 			print("Please input a keyword for analysis.")
 		else:
-			analysis_language = self.detect_language(keyword)
-			print(analysis_language)
-			nofiles = 0
+			self.read_add_to_corpus()
+			#self.train()
+			#sent = self.get_sentiment_analysis(keyword)
+			#w2v = self.get_word2Vec(keyword)
+
+	def read_add_to_corpus(self):
+		analysis_language = self.detect_language(keyword)
+			nfiles = 0
 			directory = self.directory.get()
-			for root, dirs, files in os.walk(directory):
+			for path, dirs, files in os.walk(directory):
 				for file in files:
+					filepath = os.path.join(path,file)
 					if file.endswith('.txt'):
-						# readfile()
-						# if detect_language(file) == analysis_language:
+						with open (filepath, 'r',encoding='utf-8') as f:
+							text = f.read()
+						if self.detect_language(text) == analysis_language:
 						# 	add to corpus
-						nofiles += 1
-						sys.stdout.write("\r{0} files found.".format(str(nofiles)))
-						sys.stdout.flush()
+							nfiles += 1
+							sys.stdout.write("\r{0} files found.".format(str(nfiles)))
+							sys.stdout.flush()
 			print('\n')
 
 	def detect_language(self, text):
 		from polyglot.detect import Detector
-		return Detector(text).languages[0]
+		try:
+			d = Detector(text)
+			return d.language.code # zh = simplified chinese; en = english; zh_Hant = traditional chinese
+		except:
+			return None
 
 
 
