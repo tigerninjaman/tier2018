@@ -4,6 +4,7 @@
 # The scraping functionality for the various sites is all defined in myscraper.py, this program is
 # almost entirely graphical. 
 # For questions, contact patrick.t.oneil@hotmail.com.
+# this is a test of using git. it should write 50
 
 from tkinter import Tk, BOTH, RIGHT, RAISED, X, LEFT, Text, N, BooleanVar, StringVar
 from tkinter.ttk import Frame, Button, Style, Label, Entry, Checkbutton
