@@ -1,11 +1,11 @@
-from tkinter import * #Tk, BOTH, RIGHT, RAISED, X, LEFT, Text, N, BooleanVar, StringVar, filedialog
+from tkinter import Tk, BOTH, RIGHT, RAISED, X, LEFT, Text, N, BooleanVar, StringVar, filedialog
 from tkinter.ttk import Frame, Button, Style, Label, Entry, Checkbutton
 import os
 import sys
 import time
 import string
 import re
-
+import gensim as gs
 from PorterStemmer import PorterStemmer
 from polyglot.detect import Detector
 
@@ -19,7 +19,9 @@ class Analyzer(Frame):
 		self.keyword_box = None
 		self.doclist = [] #just a doclist, for word2vec.
 		self.pstem = PorterStemmer()
-		self.alphanum = re.compile('[^a-zA-Z0-9]')
+		self.alphanum = re.compile('[^a-zA-Z0-9 ]')
+		self.alpha = re.compile('[a-zA-Z]')
+		self.stoplist = set(self.readFile('english.stop'))
 
 		self.initUI()
 	def initUI(self):
@@ -68,13 +70,29 @@ class Analyzer(Frame):
 		elif keyword == '':
 			print("Please input a keyword for analysis.")
 		else:
-			self.read_add_to_corpus()
+			self.read_add_to_corpus(keyword)
 			#self.train()
 			#sent = self.get_sentiment_analysis(keyword)
-			#w2v = self.get_word2Vec(keyword)
+			w2v = self.get_word2Vec(keyword)
 
-	def read_add_to_corpus(self):
+	def get_word2Vec(self,keyword):
+		print(self.doclist[0])
+		model = gs.models.Word2Vec(self.doclist, size=100, window=11, min_count=20, workers=64)
+		print('Training...')
+		model.train(self.doclist, total_examples=len(self.doclist), epochs=10)
+		# fname = 'Word2VecModel'
+		# model.save(fname)
+		# model = gs.models.Word2Vec.load(fname)
+		try:
+			print('Finding similar words...')
+			print(model.wv.most_similar(positive=[keyword],topn=10))
+		except:
+			print("Sorry, we can't find that word in your selected files.")
+
+
+	def read_add_to_corpus(self,keyword):
 		analysis_language = self.detect_language(keyword)
+		print(analysis_language)
 		directory = self.directory.get()
 		for path, dirs, files in os.walk(directory):
 			for file in files:
@@ -83,16 +101,23 @@ class Analyzer(Frame):
 					with open (filepath, 'r',encoding='utf-8') as f:
 						text = f.read()
 					if self.detect_language(text) == analysis_language:
+					#	print("processing...")
 					# 	add to corpus
-						text = self.process(text)
-						print(text)
-					# 	self.doclist.append(text)
+						text_as_list = self.process(text)
+					#	print(text_as_list)
+						self.doclist.append(text_as_list)
+		
 
+	#currently not super happy with this, turns bittorrent into bitorr, was -> wa, this -> thi, unfiltered -> unfilt
 	def process(self,text): #TODO: write this for chinese
 		text = text.lower()
+		text = text.replace('-',' ')
 		text = self.alphanum.sub("",text)
-		text = self.pstem.stem(text)
-		return text
+		for s in self.stoplist:
+			text.replace(s,'')
+		#for w in text.split():
+		#	text_list.append(self.pstem.stem(w))
+		return text.split()
 
 
 	def detect_language(self, text):
@@ -100,8 +125,22 @@ class Analyzer(Frame):
 			d = Detector(text)
 			return d.language.code # zh = simplified chinese; en = english; zh_Hant = traditional chinese
 		except:
-			return None
+			if self.alpha.search(text) != None:
+				return 'en'
+			else:
+				return 'zh'
 
+	def readFile(self, fileName):
+		contents = []
+		f = open(fileName)
+		for line in f:
+			contents.append(line)
+		f.close()
+		result = self.segmentWords('\n'.join(contents)) 
+		return result
+
+	def segmentWords(self, s):
+		return s.split()
 
 
 # for i in range(10):
