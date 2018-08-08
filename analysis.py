@@ -1,15 +1,26 @@
-from tkinter import Tk, BOTH, RIGHT, RAISED, X, LEFT, Text, N, BooleanVar, StringVar, filedialog
+from tkinter import * #Tk, BOTH, RIGHT, RAISED, X, LEFT, Text, N, BooleanVar, StringVar, filedialog
 from tkinter.ttk import Frame, Button, Style, Label, Entry, Checkbutton
 import os
 import sys
 import time
+import string
+import re
+
+from PorterStemmer import PorterStemmer
+from polyglot.detect import Detector
+
 
 
 class Analyzer(Frame):
 	def __init__(self):
 		super().__init__()
+
 		self.directory = StringVar()
 		self.keyword_box = None
+		self.doclist = [] #just a doclist, for word2vec.
+		self.pstem = PorterStemmer()
+		self.alphanum = re.compile('[^a-zA-Z0-9]')
+
 		self.initUI()
 	def initUI(self):
 		self.style = Style()
@@ -64,23 +75,27 @@ class Analyzer(Frame):
 
 	def read_add_to_corpus(self):
 		analysis_language = self.detect_language(keyword)
-			nfiles = 0
-			directory = self.directory.get()
-			for path, dirs, files in os.walk(directory):
-				for file in files:
-					filepath = os.path.join(path,file)
-					if file.endswith('.txt'):
-						with open (filepath, 'r',encoding='utf-8') as f:
-							text = f.read()
-						if self.detect_language(text) == analysis_language:
-						# 	add to corpus
-							nfiles += 1
-							sys.stdout.write("\r{0} files found.".format(str(nfiles)))
-							sys.stdout.flush()
-			print('\n')
+		directory = self.directory.get()
+		for path, dirs, files in os.walk(directory):
+			for file in files:
+				filepath = os.path.join(path,file)
+				if file.endswith('.txt'):
+					with open (filepath, 'r',encoding='utf-8') as f:
+						text = f.read()
+					if self.detect_language(text) == analysis_language:
+					# 	add to corpus
+						text = self.process(text)
+						print(text)
+					# 	self.doclist.append(text)
+
+	def process(self,text): #TODO: write this for chinese
+		text = text.lower()
+		text = self.alphanum.sub("",text)
+		text = self.pstem.stem(text)
+		return text
+
 
 	def detect_language(self, text):
-		from polyglot.detect import Detector
 		try:
 			d = Detector(text)
 			return d.language.code # zh = simplified chinese; en = english; zh_Hant = traditional chinese
