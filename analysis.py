@@ -18,10 +18,11 @@ class Analyzer(Frame):
 		self.directory = StringVar()
 		self.keyword_box = None
 		self.doclist = [] #just a doclist, for word2vec.
-		self.pstem = PorterStemmer()
 		self.alphanum = re.compile('[^a-zA-Z0-9 ]')
 		self.alpha = re.compile('[a-zA-Z]')
 		self.stoplist = set(self.readFile('english.stop'))
+		self.lemma = nltk.wordnet.WordNetLemmatizer()
+
 
 		self.initUI()
 	def initUI(self):
@@ -29,6 +30,8 @@ class Analyzer(Frame):
 		self.style.theme_use("default")
 		self.master.title("Analysis App - TEST")
 		self.pack(fill=BOTH, expand=True)
+		self.w2vmodel = None
+
 
 		frame1 = Frame(self)
 		frame1.pack(fill=X)
@@ -58,41 +61,46 @@ class Analyzer(Frame):
 		self.quit()
 
 	def get_filename(self):
+		self.doclist = []
 		self.directory.set(filedialog.askdirectory()) #Has an error on the mac, probably shouldn't have error on windows.
 		while self.directory.get() == '' or self.directory.get() == '/' or self.directory.get() == '\\':
 			print("Please select a directory for analysis.")
 			self.directory.set(filedialog.askdirectory())
 
 	def get_analysis(self):
-		keyword = self.keyword_box.get()
+		keyword = self.lemma.lemmatize(self.keyword_box.get())
 		if self.directory.get() == '' or self.directory.get() == '/':
 			self.get_filename()
 		elif keyword == '':
 			print("Please input a keyword for analysis.")
 		else:
-			self.read_add_to_corpus(keyword)
+			if self.doclist == []:
+				self.read_add_to_corpus(keyword)
 			#self.train()
 			#sent = self.get_sentiment_analysis(keyword)
 			w2v = self.get_word2Vec(keyword)
 
 	def get_word2Vec(self,keyword):
-		print(self.doclist[0])
-		model = gs.models.Word2Vec(self.doclist, size=100, window=11, min_count=20, workers=64)
-		print('Training...')
-		model.train(self.doclist, total_examples=len(self.doclist), epochs=10)
-		# fname = 'Word2VecModel'
-		# model.save(fname)
-		# model = gs.models.Word2Vec.load(fname)
+		fname = 'Word2VecModel'
+		if self.w2vmodel == None:
+			try:
+				self.w2vmodel = gs.models.Word2Vec.load(fname)
+				self.w2vmodel.train(self.doclist)
+				print("loading model")
+			except:
+				print("making new model")
+				self.w2vmodel = gs.models.Word2Vec(self.doclist, size=100, window=11, min_count=10, workers=64, iter=100)
+		self.w2vmodel.save(fname)
 		try:
 			print('Finding similar words...')
-			print(model.wv.most_similar(positive=[keyword],topn=10))
+			for l in self.w2vmodel.wv.most_similar(positive=[keyword],topn=10):
+				print(l)
 		except:
 			print("Sorry, we can't find that word in your selected files.")
 
 
 	def read_add_to_corpus(self,keyword):
 		analysis_language = self.detect_language(keyword)
-		print(analysis_language)
 		directory = self.directory.get()
 		for path, dirs, files in os.walk(directory):
 			for file in files:
@@ -112,12 +120,11 @@ class Analyzer(Frame):
 		text = text.lower()
 		text = text.replace('-',' ')
 		text = self.alphanum.sub("",text)
-		for s in self.stoplist:
-			text.replace(s,'')
-		l = nltk.wordnet.WordNetLemmatizer()
 		text_list = []
 		for w in text.split():
-			text_list.append(l.lemmatize(w))
+			lemma_w = self.lemma.lemmatize(w)
+			if lemma_w not in self.stoplist:
+				text_list.append(lemma_w)
 		return text_list
 
 
@@ -131,6 +138,7 @@ class Analyzer(Frame):
 			else:
 				return 'zh'
 
+	# Taken from one of the cs124 assignments.
 	def readFile(self, fileName):
 		contents = []
 		f = open(fileName)

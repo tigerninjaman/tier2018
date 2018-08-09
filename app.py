@@ -201,12 +201,13 @@ class App(Frame):
 				print("獲取TechCrunch文章"+term+"。。。")
 			else:
 				print("Getting Techcrunch articles for " +term + "...")
-			for link in link_list:
+			for i, link in enumerate(link_list):
+				print("\r" + str(i+1) + "/" + str(len(link_list)),end="")
 				link_text_dict[link] = myscraper.get_TC_art_text(link)
 			if self.language:
-				print("獲取好了。")
+				print("\n獲取好了。")
 			else:
-				print("Done.")
+				print("\nDone.")
 			if self.language:
 				print("將文章保存為english/"+term+"...")
 			else:
@@ -238,12 +239,13 @@ class App(Frame):
 				print("獲取Engadget文章"+term+"。。。")
 			else:
 				print("Getting Engadget articles for " +term + "...")
-			for link in link_list:
+			for i, link in enumerate(link_list):
+				print("\r" + str(i+1) + "/" + str(len(link_list)),end="")
 				link_text_dict[link] = myscraper.get_EGT_art_text(link)
 			if self.language:
-				print("獲取好了。")
+				print("\n獲取好了。")
 			else:
-				print("Done.")
+				print("\nDone.")
 			if self.language:
 				print("將文章保存為english/"+term+"...")
 			else:
@@ -275,12 +277,13 @@ class App(Frame):
 				print("獲取TheVerge文章"+term+"。。。")
 			else:
 				print("Getting TheVerge articles for " +term + "...")
-			for link in link_list:
+			for i,link in enumerate(link_list):
+				print("\r" + str(i+1) + "/" + str(len(link_list)),end="")
 				link_text_dict[link] = myscraper.get_verge_art_text(link)
 			if self.language:
-				print("獲取好了。")
+				print("\n獲取好了。")
 			else:
-				print("Done.")
+				print("\nDone.")
 			if self.language:
 				print("將文章保存為english/"+term+"...")
 			else:
@@ -314,13 +317,14 @@ class App(Frame):
 				print("獲取36kr文章"+term+"。。。")
 			else:
 				print("Getting 36kr articles for " +term + "...")
-			for link in link_list:
+			for i,link in enumerate(link_list):
+				print("\r" + str(i+1) + "/" + str(len(link_list)),end="")
 				link_text_dict[link] = myscraper.get_36kr_art_text(link,chrome)
 			chrome.quit()
 			if self.language:
-				print("獲取好了。")
+				print("\n獲取好了。")
 			else:
-				print("Done.")
+				print("\nDone.")
 			if self.language:
 				print("將文章保存為simplified/"+term+"...")
 			else:
@@ -355,13 +359,14 @@ class App(Frame):
 				print("獲取Digitimes文章"+term+"。。。")
 			else:
 				print("Getting Digitimes articles for " +term + "...")
-			for link in link_list:
+			for i,link in enumerate(link_list):
+				print("\r" + str(i+1) + "/" + str(len(link_list)),end="")
 				link_text_dict[link] = myscraper.get_DGT_art_text(link,chrome)
 			chrome.quit()
 			if self.language:
-				print("獲取好了。")
+				print("\n獲取好了。")
 			else:
-				print("Done.")
+				print("\nDone.")
 			if self.language:
 				print("將文章保存為traditional/"+term+"...")
 			else:
