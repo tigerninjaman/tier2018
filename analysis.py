@@ -6,7 +6,7 @@ import time
 import string
 import re
 import gensim as gs
-from PorterStemmer import PorterStemmer
+import nltk
 from polyglot.detect import Detector
 
 
@@ -108,16 +108,17 @@ class Analyzer(Frame):
 						self.doclist.append(text_as_list)
 		
 
-	#currently not super happy with this, turns bittorrent into bitorr, was -> wa, this -> thi, unfiltered -> unfilt
 	def process(self,text): #TODO: write this for chinese
 		text = text.lower()
 		text = text.replace('-',' ')
 		text = self.alphanum.sub("",text)
 		for s in self.stoplist:
 			text.replace(s,'')
-		#for w in text.split():
-		#	text_list.append(self.pstem.stem(w))
-		return text.split()
+		l = nltk.wordnet.WordNetLemmatizer()
+		text_list = []
+		for w in text.split():
+			text_list.append(l.lemmatize(w))
+		return text_list
 
 
 	def detect_language(self, text):
