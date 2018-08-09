@@ -231,9 +231,9 @@ class App(Frame):
 				print('No results found.')
 		else:
 			if self.language:
-				print("獲取好了。")
+				print("\n獲取好了。")
 			else:
-				print("Done.")
+				print("\nDone.")
 			link_text_dict = {}
 			if self.language:
 				print("獲取Engadget文章"+term+"。。。")
@@ -269,9 +269,9 @@ class App(Frame):
 				print('No results found.')
 		else:
 			if self.language:
-				print("獲取好了。")
+				print("\n獲取好了。")
 			else:
-				print("Done.")
+				print("\nDone.")
 			link_text_dict = {}
 			if self.language:
 				print("獲取TheVerge文章"+term+"。。。")
@@ -309,9 +309,9 @@ class App(Frame):
 			chrome.quit()
 		else:
 			if self.language:
-				print("獲取好了。")
+				print("\n獲取好了。")
 			else:
-				print("Done.")
+				print("\nDone.")
 			link_text_dict = {}
 			if self.language:
 				print("獲取36kr文章"+term+"。。。")
@@ -319,7 +319,12 @@ class App(Frame):
 				print("Getting 36kr articles for " +term + "...")
 			for i,link in enumerate(link_list):
 				print("\r" + str(i+1) + "/" + str(len(link_list)),end="")
-				link_text_dict[link] = myscraper.get_36kr_art_text(link,chrome)
+				text = myscraper.get_36kr_art_text(link,chrome)
+				if text == "":
+					chrome.quit()
+					chrome = webdriver.Chrome()
+				else:
+					link_text_dict[link] = text
 			chrome.quit()
 			if self.language:
 				print("\n獲取好了。")
@@ -334,7 +339,6 @@ class App(Frame):
 				print("保存好了。")
 			else:
 				print("Done.")
-
 
 	def dwnld_DGT(self,term,pages):
 		if self.language:
@@ -351,9 +355,9 @@ class App(Frame):
 			chrome.quit()
 		else:
 			if self.language:
-				print("獲取好了。")
+				print("\n獲取好了。")
 			else:
-				print("Done.")
+				print("\nDone.")
 			link_text_dict = {}
 			if self.language:
 				print("獲取Digitimes文章"+term+"。。。")
@@ -361,7 +365,10 @@ class App(Frame):
 				print("Getting Digitimes articles for " +term + "...")
 			for i,link in enumerate(link_list):
 				print("\r" + str(i+1) + "/" + str(len(link_list)),end="")
-				link_text_dict[link] = myscraper.get_DGT_art_text(link,chrome)
+				text = myscraper.get_DGT_art_text(link,chrome)
+				if text == "":
+					continue
+				link_text_dict[link] = text
 			chrome.quit()
 			if self.language:
 				print("\n獲取好了。")
