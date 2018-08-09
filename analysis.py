@@ -1,13 +1,9 @@
 from tkinter import Tk, BOTH, RIGHT, RAISED, X, LEFT, Text, N, BooleanVar, StringVar, filedialog
 from tkinter.ttk import Frame, Button, Style, Label, Entry, Checkbutton
-import os
-import sys
-import time
-import string
-import re
+import os, sys, time, string, re, nltk
 import gensim as gs
-import nltk
 from polyglot.detect import Detector
+from pdf_to_txt import convert_pdf_to_txt
 
 
 
@@ -22,7 +18,7 @@ class Analyzer(Frame):
 		self.alpha = re.compile('[a-zA-Z]')
 		self.stoplist = set(self.readFile('english.stop'))
 		self.lemma = nltk.wordnet.WordNetLemmatizer()
-
+		self.bigrams = ['hong kong', 'artificial intelligence', 'elon musk', 'block chain'] #list of words that should be processed as 1 token
 
 		self.initUI()
 	def initUI(self):
@@ -105,21 +101,30 @@ class Analyzer(Frame):
 		for path, dirs, files in os.walk(directory):
 			for file in files:
 				filepath = os.path.join(path,file)
+				if file.endswith('.pdf'):
+					text = convert_pdf_to_txt(filepath)
 				if file.endswith('.txt'):
 					with open (filepath, 'r',encoding='utf-8') as f:
 						text = f.read()
-					if self.detect_language(text) == analysis_language:
+				if self.detect_language(text) == analysis_language:
 					#	print("processing...")
 					# 	add to corpus
-						text_as_list = self.process(text)
-					#	print(text_as_list)
-						self.doclist.append(text_as_list)
+					text_as_list = self.process(text)
+				#	print(text_as_list)
+					self.doclist.append(text_as_list)
 		
 
 	def process(self,text): #TODO: write this for chinese
 		text = text.lower()
+		while text.find('\n\n') != -1:
+			text.replace('\n\n','\n')
 		text = text.replace('-',' ')
+		text = text.replace('\'s','')
+		
 		text = self.alphanum.sub("",text)
+		for b in self.bigrams:
+			underscore = b.replace(' ', '_')
+			text = text.replace(b,underscore)
 		text_list = []
 		for w in text.split():
 			lemma_w = self.lemma.lemmatize(w)
@@ -150,6 +155,7 @@ class Analyzer(Frame):
 
 	def segmentWords(self, s):
 		return s.split()
+	
 
 
 # for i in range(10):

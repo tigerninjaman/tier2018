@@ -13,9 +13,8 @@
 
 from bs4 import BeautifulSoup as BS
 from selenium import webdriver
-import time
-import requests
-import os
+import time, requests, os
+from pdf_to_txt import save_pdf_link
 
 egt_home = 'http://www.engadget.com'
 kr_home = 'http://www.36kr.com'
@@ -223,7 +222,7 @@ def get_DGT_art_text(link,chrome):
 		text = text + p.text
 	return text
 
-#Sterilizes the link so it can be used as a filename.
+#Sterilizes the link so it can be used as a (unique) filename.
 def sterilize_link(link):
 	link = link.replace('http://','')
 	link = link.replace('https://','')
