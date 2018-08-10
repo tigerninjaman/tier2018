@@ -1,13 +1,9 @@
 from tkinter import Tk, BOTH, RIGHT, RAISED, X, LEFT, Text, N, BooleanVar, StringVar, filedialog
 from tkinter.ttk import Frame, Button, Style, Label, Entry, Checkbutton
-import os
-import sys
-import time
-import string
-import re
+import os, sys, time, string, re, nltk
 import gensim as gs
-import nltk
 from polyglot.detect import Detector
+from pdf_to_txt import convert_pdf_to_txt
 
 
 
@@ -105,15 +101,17 @@ class Analyzer(Frame):
 		for path, dirs, files in os.walk(directory):
 			for file in files:
 				filepath = os.path.join(path,file)
+				if file.endswith('.pdf'):
+					text = convert_pdf_to_txt(filepath)
 				if file.endswith('.txt'):
 					with open (filepath, 'r',encoding='utf-8') as f:
 						text = f.read()
-					if self.detect_language(text) == analysis_language:
+				if self.detect_language(text) == analysis_language:
 					#	print("processing...")
 					# 	add to corpus
-						text_as_list = self.process(text)
-					#	print(text_as_list)
-						self.doclist.append(text_as_list)
+					text_as_list = self.process(text)
+				#	print(text_as_list)
+					self.doclist.append(text_as_list)
 		
 
 	def process(self,text): #TODO: write this for chinese
@@ -150,6 +148,7 @@ class Analyzer(Frame):
 
 	def segmentWords(self, s):
 		return s.split()
+	
 
 
 # for i in range(10):
