@@ -47,6 +47,9 @@ class App(Frame):
 		self.go_button_text.set("Go!")
 		self.quit_button_text = StringVar()
 		self.quit_button_text.set("Quit")
+		self.browse_button_text = StringVar()
+		self.browse_button_text.set("Browse...")
+		self.directory_text = StringVar()
 
 
 		self.style = Style()
@@ -57,7 +60,7 @@ class App(Frame):
 
 		instructions = Frame(self)
 		instructions.pack(fill=X)
-		instructions_lbl = Label(instructions,textvariable=self.instructions_text)
+		instructions_lbl = Label(instructions,textvariable=self.instructions_text,font="-size 10")
 		instructions_lbl.pack(fill=X,padx=5,pady=5)
 
 
@@ -75,7 +78,6 @@ class App(Frame):
 		npage_lbl.pack(side=LEFT,padx=5,pady=5)
 		self.npage_box = Entry(frame2)
 		self.npage_box.pack(fill=X,padx=5,pady=5)
-
 
 		frame3 = Frame(self)
 		frame3.pack(fill=X,expand=True)
@@ -107,7 +109,6 @@ class App(Frame):
 		else:
 			print("Goodbye!")
 		self.quit()
-
 
 	#Changes the language between traditional Chinese and English, using the 
 	#StringVars defined in init. 
@@ -203,7 +204,9 @@ class App(Frame):
 				print("Getting Techcrunch articles for " +term + "...")
 			for i, link in enumerate(link_list):
 				print("\r" + str(i+1) + "/" + str(len(link_list)),end="")
-				link_text_dict[link] = myscraper.get_TC_art_text(link)
+				text = myscraper.get_TC_art_text(link)
+				if text != '':
+					link_text_dict[link] = text
 			if self.language:
 				print("\n獲取好了。")
 			else:
@@ -241,7 +244,9 @@ class App(Frame):
 				print("Getting Engadget articles for " +term + "...")
 			for i, link in enumerate(link_list):
 				print("\r" + str(i+1) + "/" + str(len(link_list)),end="")
-				link_text_dict[link] = myscraper.get_EGT_art_text(link)
+				text = myscraper.get_EGT_art_text(link)
+				if text != '':
+					link_text_dict[link] = text
 			if self.language:
 				print("\n獲取好了。")
 			else:
@@ -279,7 +284,9 @@ class App(Frame):
 				print("Getting TheVerge articles for " +term + "...")
 			for i,link in enumerate(link_list):
 				print("\r" + str(i+1) + "/" + str(len(link_list)),end="")
-				link_text_dict[link] = myscraper.get_verge_art_text(link)
+				text = myscraper.get_verge_art_text(link)
+				if text != '':
+					link_text_dict[link] = text
 			if self.language:
 				print("\n獲取好了。")
 			else:
@@ -366,9 +373,8 @@ class App(Frame):
 			for i,link in enumerate(link_list):
 				print("\r" + str(i+1) + "/" + str(len(link_list)),end="")
 				text = myscraper.get_DGT_art_text(link,chrome)
-				if text == "":
-					continue
-				link_text_dict[link] = text
+				if text != "":
+					link_text_dict[link] = text
 			chrome.quit()
 			if self.language:
 				print("\n獲取好了。")
