@@ -18,7 +18,7 @@ class Analyzer(Frame):
 		self.alpha = re.compile('[a-zA-Z]')
 		self.stoplist = set(self.readFile('english.stop'))
 		self.lemma = nltk.wordnet.WordNetLemmatizer()
-
+		self.bigrams = ['hong kong', 'artificial intelligence', 'elon musk', 'block chain'] #list of words that should be processed as 1 token
 
 		self.initUI()
 	def initUI(self):
@@ -116,8 +116,15 @@ class Analyzer(Frame):
 
 	def process(self,text): #TODO: write this for chinese
 		text = text.lower()
+		while text.find('\n\n') != -1:
+			text.replace('\n\n','\n')
 		text = text.replace('-',' ')
+		text = text.replace('\'s','')
+		
 		text = self.alphanum.sub("",text)
+		for b in self.bigrams:
+			underscore = b.replace(' ', '_')
+			text = text.replace(b,underscore)
 		text_list = []
 		for w in text.split():
 			lemma_w = self.lemma.lemmatize(w)
