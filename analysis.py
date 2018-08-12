@@ -84,7 +84,7 @@ class Analyzer(Frame):
 			print("Training new model...")
 			self.w2vmodel = gs.models.Word2Vec(self.doclist, size=100, window=11, min_count=10, workers=64, iter=100)
 			self.w2vmodel.train(self.doclist,total_examples=lens(self.doclist),epochs=10)
-			self.traines = True
+			self.trained = True
 		try:
 			print('Finding top 10 similar words...')
 			for l in self.w2vmodel.wv.most_similar(positive=[keyword],topn=10):
@@ -109,6 +109,7 @@ class Analyzer(Frame):
 				if self.detect_language(text) == analysis_language:
 					text_as_list = self.process(text)
 					self.doclist.append(text_as_list)
+		print("\nDone.")
 		
 
 	def process(self,text): #TODO: write this for chinese
