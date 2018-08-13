@@ -246,7 +246,7 @@ def get_OECD_art_links(term,pages,chrome):
 	pdf_link_list = []
 	print("\nGetting all pdf links...")
 	for link in links:
-		#looks like it doesn't handle oecd-ilibrary correctly since it's not a direct link, it's a redirect. maybe use headless webdriver?
+		#looks like it doesn't handle oecd-ilibrary correctly. could have something to do w a redirect but it doesn't look like it.
 		if link.endswith('pdf'):
 			pdf_link_list.append(link)
 		else:
@@ -270,21 +270,20 @@ def save_OECD_links(link_list,language,term):
 		language = 'simplified'
 	elif language == 'zh_Hant':
 		language = 'traditional'
-
-	for link in link_list:
+	for i,link in enumerate(link_list):
+		print("\r" + str(i) + "/"+str(len(link_list)),end="")
 		if not link.endswith('pdf'):
 			continue
 		if not link.startswith('http'):
 			link = oecd_home + link
 		filename = sterilize_link(link)
-		print(link)
-		r = requests.get(link)
+		r = requests.get(link,allow_redirects=True,timeout=10)
 		try:
-			with open('{}/{}/{}.pdf'.format(language,term,filename),'wb') as output:
+			with open('{}/{}/{}.pdf'.format(language,term,filename),'wb',encoding='utf-8') as output:
 				output.write(r.content)
 		except:
 			os.makedirs('{}/{}'.format(language,term))
-			with open('{}/{}/{}.pdf'.format(language,term,filename),'wb') as output:
+			with open('{}/{}/{}.pdf'.format(language,term,filename),'wb',encoding='utf-8') as output:
 				output.write(r.content)
 
 #Sterilizes the link so it can be used as a (unique) filename.
