@@ -9,7 +9,7 @@ from tkinter import Tk, BOTH, RIGHT, RAISED, X, LEFT, Text, N, BooleanVar, Strin
 from tkinter.ttk import Frame, Button, Style, Label, Entry, Checkbutton
 from selenium import webdriver
 import os
-from polyglot.detect import Detector
+#from polyglot.detect import Detector
 
 import myscraper
 
@@ -414,7 +414,7 @@ class App(Frame):
 				print("\n獲取好了。")
 			else:
 				print("\nDone.")
-			text_lang = self.detect_language(term)
+			text_lang = 'en' #self.detect_language(term)
 			if text_lang == None:
 				text_lang = 'en'
 			if self.language:
@@ -427,12 +427,12 @@ class App(Frame):
 			else:
 				print("Done.")
 
-	def detect_language(self, text):
-		try:
-			d = Detector(text).quiet
-			return d.language.code # zh = simplified chinese; en = english; zh_Hant = traditional chinese
-		except: # usually an error due to malformed or empty input, so I don't want to have a default return value
-			return None
+	# def detect_language(self, text):
+	# 	try:
+	# 		d = Detector(text).quiet
+	# 		return d.language.code # zh = simplified chinese; en = english; zh_Hant = traditional chinese
+	# 	except: # usually an error due to malformed or empty input, so I don't want to have a default return value
+	# 		return None
 
 def main():
 	print("Initializing UI...")
@@ -440,7 +440,8 @@ def main():
 	root = Tk()
 	root.geometry("430x220+300+300")
 	app = App()
-	root.mainloop()  
+	root.mainloop() 
+	time.sleep(10)
 
 if __name__ == '__main__':
 	main()   
