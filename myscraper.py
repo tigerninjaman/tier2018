@@ -28,6 +28,9 @@ url_3_36kr = '&ts=1531173711595'
 DGT_username = 'd17635@tier.org.tw'
 DGT_password = 'rebeca1'
 DGT_site = 'http://www.digitimes.com.tw'
+oecd_home = "http://www.oecd.org"
+oecd_1 = "http://www.oecd.org/general/searchresults/?q="
+oecd_2 = "&cx=012432601748511391518:xzeadub0b0a&cof=FORID:11&ie=UTF-8"
 
 # Turns out after forgetting to change which one I used, it doesn't matter - as long as it's a valid header.
 verge_mac_header = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/67.0.3396.99 Safari/537.36'}
@@ -129,7 +132,6 @@ def get_36kr_art_links(term,pages,chrome):
 		pageno = i + 1
 		print("\rPage " + str(pageno),end="")
 		url_search = url_1_36kr + term + url_2_36kr + str(pageno) + url_3_36kr
-		chrome.set_page_load_timeout(50)
 		try:
 			chrome.get(url_search)
 		except:
@@ -221,6 +223,69 @@ def get_DGT_art_text(link,chrome):
 	for p in pars:
 		text = text + p.text
 	return text
+
+def get_OECD_art_links(term,pages,chrome):
+	link = oecd_1 + term + oecd_2
+	chrome.get(link)
+	if pages >= 10:
+		pages = 10
+	links = []
+	for i in range(pages):
+		pageno = i + 1
+		print("\rPage " + str(pageno),end="")
+		time.sleep(2)
+		html = chrome.page_source
+		soup = BS(html,'lxml')
+		link_objs = soup.findAll('div',{'class':'gsc-webResult gsc-result'})
+		for l in link_objs:
+			links.append(l.find('a')['href'])
+		if pageno < 10:
+			pages_list = chrome.find_elements_by_class_name('gsc-cursor-page')
+			pages_list[pageno].click() # the array starts from 0, we want the next page, pageno starts at 1, so we can just get [pageno]
+	chrome.quit()
+	pdf_link_list = []
+	print("\nGetting all pdf links...")
+	for link in links:
+		#looks like it doesn't handle oecd-ilibrary correctly since it's not a direct link, it's a redirect. maybe use headless webdriver?
+		if link.endswith('pdf'):
+			pdf_link_list.append(link)
+		else:
+			temp_html = requests.get(link).text
+			temp_soup = BS(temp_html,'lxml')
+			temp_links = temp_soup.findAll('a')
+			for t in temp_links:
+				try:
+					l = t['href']
+					if l.endswith('pdf'):
+						pdf_link_list.append(l)
+						break
+				except:
+					continue
+	return pdf_link_list
+
+def save_OECD_links(link_list,language,term):
+	if language == 'en':
+		language = 'english'
+	elif language == 'zh':
+		language = 'simplified'
+	elif language == 'zh_Hant':
+		language = 'traditional'
+
+	for link in link_list:
+		if not link.endswith('pdf'):
+			continue
+		if not link.startswith('http'):
+			link = oecd_home + link
+		filename = sterilize_link(link)
+		print(link)
+		r = requests.get(link)
+		try:
+			with open('{}/{}/{}.pdf'.format(language,term,filename),'wb') as output:
+				output.write(r.content)
+		except:
+			os.makedirs('{}/{}'.format(language,term))
+			with open('{}/{}/{}.pdf'.format(language,term,filename),'wb') as output:
+				output.write(r.content)
 
 #Sterilizes the link so it can be used as a (unique) filename.
 def sterilize_link(link):

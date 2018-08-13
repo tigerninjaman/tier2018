@@ -9,6 +9,7 @@ from tkinter import Tk, BOTH, RIGHT, RAISED, X, LEFT, Text, N, BooleanVar, Strin
 from tkinter.ttk import Frame, Button, Style, Label, Entry, Checkbutton
 from selenium import webdriver
 import os
+from polyglot.detect import Detector
 
 import myscraper
 
@@ -32,6 +33,7 @@ class App(Frame):
 		self.verge = BooleanVar()
 		self.kr = BooleanVar()
 		self.DGT = BooleanVar()
+		self.OECD = BooleanVar()
 
 		#Variables to set the language
 		self.language = False
@@ -101,6 +103,9 @@ class App(Frame):
 		checkButton_36kr.pack(side=RIGHT,padx=5,pady=5)
 		checkButton_DGT = Checkbutton(frame4, text="Digitimes",variable=self.DGT)
 		checkButton_DGT.pack(side=RIGHT,padx=5,pady=5)
+		checkButton_OECD = Checkbutton(frame4, text="OECD",variable=self.OECD)
+		checkButton_OECD.pack(side=RIGHT,padx=5,pady=5)
+		
 
 	#Quits the program entirely.
 	def quitFunc(self): 
@@ -142,7 +147,7 @@ class App(Frame):
 				print("請您鍵入搜索字詞。")
 			else:
 				print("Please type something into the search box.")
-		elif self.TC.get() != True and self.EGT.get() != True and self.verge.get() != True and self.DGT.get() != True and self.kr.get() != True:
+		elif self.TC.get() != True and self.EGT.get() != True and self.verge.get() != True and self.DGT.get() != True and self.kr.get() != True and self.OECD.get() != True:
 			if self.language:
 				print("請您至少選擇一個網賺。")
 			else:
@@ -173,6 +178,8 @@ class App(Frame):
 				self.dwnld_36kr(term,pages)
 			if self.DGT.get() == True:
 				self.dwnld_DGT(term,pages)
+			if self.OECD.get() == True:
+				self.dwnld_OECD(term,pages)
 			if self.language:
 				print("做完了！\n")
 			else:
@@ -390,6 +397,42 @@ class App(Frame):
 			else:
 				print("Done.")
 
+	def dwnld_OECD(self,term,pages):
+		if self.language:
+			print("獲取OECD鏈接"+term+"。。。")
+		else:
+			print("Getting OECD links for " + term + "...")
+		chrome = webdriver.Chrome()
+		link_list = myscraper.get_OECD_art_links(term,pages,chrome) # I have chrome.quit() inside the function
+		if not link_list:
+			if self.language:
+				print("找不到符合所。")
+			else:
+				print('No results found.')
+		else:
+			if self.language:
+				print("\n獲取好了。")
+			else:
+				print("\nDone.")
+			text_lang = self.detect_language(term)
+			if text_lang == None:
+				text_lang = 'en'
+			if self.language:
+				print("將文章保存...")
+			else:
+				print("Saving articles...")
+			myscraper.save_OECD_links(link_list,text_lang,term)
+			if self.language:
+				print("保存好了。")
+			else:
+				print("Done.")
+
+	def detect_language(self, text):
+		try:
+			d = Detector(text).quiet
+			return d.language.code # zh = simplified chinese; en = english; zh_Hant = traditional chinese
+		except: # usually an error due to malformed or empty input, so I don't want to have a default return value
+			return None
 
 def main():
 	print("Initializing UI...")
