@@ -14,7 +14,6 @@
 from bs4 import BeautifulSoup as BS
 from selenium import webdriver
 import time, requests, os
-from pdf_to_txt import save_pdf_link
 
 egt_home = 'http://www.engadget.com'
 kr_home = 'http://www.36kr.com'
@@ -62,22 +61,22 @@ def get_TC_art_text(link):
 
 #Gets all resultant article links for a given search term on engadget.com.
 #Opens a browser via selenium's webdriver and clicks on the 'Show more results' 30 times.
-def get_EGT_art_links(term,pages):
+def get_EGT_art_links(term,pages,chrome):
 	link_list = []
 	url = egt_search_addr + term
-	chrome = webdriver.Chrome()
 	chrome.get(url)
+	time.sleep(2)
+	print("\rPage " + str(1),end="")
 	for i in range(pages - 1):
-		pageno = i + 1
-		print("\rPage " + str(pageno),end="")
 		try:
 			more_res_link = chrome.find_element_by_link_text("Show more results")
 			more_res_link.click()
-			time.sleep(3)
 		except:
 			break
+		pageno = i + 2
+		print("\rPage " + str(pageno),end="")
+		time.sleep(3)
 	html = chrome.page_source
-	chrome.quit()
 	soup = BS(html, 'lxml')
 	all_arts_class = soup.findAll('a', attrs={'class':'o-hit__link'})
 	for item in all_arts_class:
@@ -105,6 +104,7 @@ def get_verge_art_links(term,pages):
 		print("\rPage " + str(pageno),end="")
 		url = verge_search_addr + str(pageno) + verge_sep + term
 		text = requests.get(url,headers=verge_pc_header).text
+		time.sleep(1)
 		soup = BS(text,'lxml')
 		all_arts_class = soup.findAll('a',attrs={'data-analytics-link':'article'})
 		if not all_arts_class:
@@ -279,11 +279,11 @@ def save_OECD_links(link_list,language,term):
 		filename = sterilize_link(link)
 		r = requests.get(link,allow_redirects=True,timeout=10)
 		try:
-			with open('{}/{}/{}.pdf'.format(language,term,filename),'wb',encoding='utf-8') as output:
+			with open('{}/{}/{}.pdf'.format(language,term,filename),'wb') as output:
 				output.write(r.content)
 		except:
 			os.makedirs('{}/{}'.format(language,term))
-			with open('{}/{}/{}.pdf'.format(language,term,filename),'wb',encoding='utf-8') as output:
+			with open('{}/{}/{}.pdf'.format(language,term,filename),'wb') as output:
 				output.write(r.content)
 
 #Sterilizes the link so it can be used as a (unique) filename.

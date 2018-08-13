@@ -4,6 +4,8 @@
 # The scraping functionality for the various sites is all defined in myscraper.py, this program is
 # almost entirely graphical. 
 # For questions, contact patrick.t.oneil@hotmail.com.
+# I know many things - handling of chrome window, printing - are inconsistenly handled and shared
+# between app and myscraper. At this point it works perfectly and fixing it would only be aesthetic.
 
 from tkinter import Tk, BOTH, RIGHT, RAISED, X, LEFT, Text, N, BooleanVar, StringVar
 from tkinter.ttk import Frame, Button, Style, Label, Entry, Checkbutton
@@ -57,7 +59,7 @@ class App(Frame):
 		self.style = Style()
 		self.style.theme_use("default")
 	
-		self.master.title("Tier App - TEST")
+		self.master.title("Tier Search App v1.0")
 		self.pack(fill=BOTH, expand=True)
 
 		instructions = Frame(self)
@@ -233,7 +235,9 @@ class App(Frame):
 			print("獲取Engadget鏈接"+term+"。。。")
 		else:
 			print("Getting Engadget links for " + term + "...")
-		link_list = myscraper.get_EGT_art_links(term,pages)
+		chrome = webdriver.Chrome() # Adding options for minimal window size makes getting multiple pages impossible
+		link_list = myscraper.get_EGT_art_links(term,pages,chrome)
+		chrome.quit()
 		if not link_list:
 			if self.language:
 				print("找不到符合所。")
@@ -313,7 +317,9 @@ class App(Frame):
 			print("獲取36kr鏈接"+term+"。。。")
 		else:
 			print("Getting 36kr links for " + term + "...")
-		chrome = webdriver.Chrome()
+		options = webdriver.ChromeOptions()
+		options.add_argument('window-size=1,1')
+		chrome = webdriver.Chrome(chrome_options=options)
 		link_list = myscraper.get_36kr_art_links(term,pages,chrome)
 		if not link_list:
 			if self.language:
@@ -336,7 +342,9 @@ class App(Frame):
 				text = myscraper.get_36kr_art_text(link,chrome)
 				if text == "":
 					chrome.quit()
-					chrome = webdriver.Chrome()
+					options = webdriver.ChromeOptions()
+					options.add_argument('window-size=1,1')
+					chrome = webdriver.Chrome(chrome_options=options)()
 				else:
 					link_text_dict[link] = text
 			chrome.quit()
@@ -359,7 +367,9 @@ class App(Frame):
 			print("獲取Digitimes鏈接"+term+"。。。")
 		else:
 			print("Getting Digitimes links for " + term + "...")
-		chrome = webdriver.Chrome()
+		options = webdriver.ChromeOptions()
+		options.add_argument('window-size=1,1')
+		chrome = webdriver.Chrome(chrome_options=options)()
 		link_list = myscraper.get_DGT_art_links(term,pages,chrome)
 		if not link_list:
 			if self.language:
@@ -402,7 +412,9 @@ class App(Frame):
 			print("獲取OECD鏈接"+term+"。。。")
 		else:
 			print("Getting OECD links for " + term + "...")
-		chrome = webdriver.Chrome()
+		options = webdriver.ChromeOptions()
+		options.add_argument('window-size=1,1')
+		chrome = webdriver.Chrome(chrome_options=options)()
 		link_list = myscraper.get_OECD_art_links(term,pages,chrome) # I have chrome.quit() inside the function
 		if not link_list:
 			if self.language:
@@ -441,7 +453,6 @@ def main():
 	root.geometry("430x220+300+300")
 	app = App()
 	root.mainloop() 
-	time.sleep(10)
 
 if __name__ == '__main__':
 	main()   
