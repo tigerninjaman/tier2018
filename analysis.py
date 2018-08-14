@@ -18,10 +18,10 @@ class Analyzer(Frame):
 		self.alpha = re.compile('[a-zA-Z]')
 		self.stoplist = set(self.readFile('english.stop'))
 		self.lemma = nltk.wordnet.WordNetLemmatizer()
-		self.bigrams = ['hong kong', 'artificial intelligence', 'elon musk', 'block chain'] #list of words that should be processed as 1 token
-		self.trained = False
-
+		self.bigrams = ['hong kong', 'artificial intelligence', 'elon musk', 'xi jinping'] #list of words that should be processed as 1 token
+		self.plural = ['blockchain', 'elon musk', 'hong kong','limebike','bitcoin','ofo','gogoro','mobike','tesla','spacex']
 		self.initUI()
+
 	def initUI(self):
 		self.style = Style()
 		self.style.theme_use("default")
@@ -58,15 +58,14 @@ class Analyzer(Frame):
 		self.quit()
 
 	def get_filename(self):
-		self.doclist = []
-		self.directory.set(filedialog.askdirectory()) #Has an error on the mac, not on windows - bug in tkinter
-		while self.directory.get() == '' or self.directory.get() == '/' or self.directory.get() == '\\':
+		path = filedialog.askdirectory() #Has an error on the mac, not on windows - bug in tkinter
+		while path == '' or path == '/' or path == '\\':
 			print("Please select a directory for analysis.")
 			path = filedialog.askdirectory()
-			if path != self.directory.get():
-				self.directory.set(path)
-				self.trained = False
-
+		if path != self.directory.get():
+			self.directory.set(path)
+			self.w2vmodel = None
+			self.doclist = []
 
 	def get_analysis(self):
 		keyword = self.lemma.lemmatize(self.keyword_box.get())
@@ -75,18 +74,34 @@ class Analyzer(Frame):
 		elif keyword == '':
 			print("Please input a keyword for analysis.")
 		else:
-			if not self.trained:
+			if self.w2vmodel == None and not self.load_word2Vec():
 				self.read_add_to_corpus(keyword)
+			keyword = keyword.replace(' ','_')
+			print(keyword)
 			self.get_word2Vec(keyword)
 
+	def load_word2Vec(self):
+		filename = 'w2vmodel'
+		directory = self.directory.get()
+		path = os.path.join(directory,filename)
+		try:
+			self.w2vmodel = gs.models.Word2Vec.load(path)
+			return True
+		except:
+			return False
+
 	def get_word2Vec(self,keyword):
-		if self.w2vmodel == None or not self.trained:
+		if self.w2vmodel == None:
 			print("Training new model...")
 			self.w2vmodel = gs.models.Word2Vec(self.doclist, size=100, window=11, min_count=10, workers=64, iter=100)
-			self.w2vmodel.train(self.doclist,total_examples=lens(self.doclist),epochs=10)
-			self.trained = True
+			self.w2vmodel.train(self.doclist,total_examples=len(self.doclist),epochs=10)
+			
+			filename = 'w2vmodel'
+			directory = self.directory.get()
+			path = os.path.join(directory,filename)
+			self.w2vmodel.save(path)
 		try:
-			print('Finding top 10 similar words...')
+			print('\nTop 10 similar words to ' + keyword + ':')
 			for l in self.w2vmodel.wv.most_similar(positive=[keyword],topn=10):
 				print(l)
 		except:
@@ -102,24 +117,35 @@ class Analyzer(Frame):
 				print("\r" + str(n+1) + "/" + str(len(files)),end="")
 				filepath = os.path.join(path,file)
 				if file.endswith('.pdf'):
-					text = convert_pdf_to_txt(filepath)
-				if file.endswith('.txt'):
+					print(' (pdfs take a while)', end="")
+					try:
+						text = convert_pdf_to_txt(filepath)
+					except:
+						print('\n'+file + ' could not be opened. Continuing.')
+						continue
+				elif file.endswith('.txt'):
+					print("                    ",end="")
 					with open (filepath, 'r',encoding='utf-8') as f:
 						text = f.read()
 				if self.detect_language(text) == analysis_language:
 					text_as_list = self.process(text)
 					self.doclist.append(text_as_list)
-		print("\nDone.")
+		print("\nDone. Total documents processed: " + str(len(self.doclist)))
+		print(self.doclist[0])
 		
 
 	def process(self,text): #TODO: write this for chinese
 		text = text.lower()
-		while text.find('\n\n') != -1:
-			text.replace('\n\n','\n')
+		text = text.replace('\n\n','\n')
 		text = text.replace('-',' ')
 		text = text.replace('\'s','')
+		#text = text.replace('a.i.', 'artificial intelligence')
+		text = text.replace('block chain','blockchain')
 		
 		text = self.alphanum.sub("",text)
+		for p in self.plural:
+			plur = p + 's'
+			text = text.replace(plur,p)
 		for b in self.bigrams:
 			underscore = b.replace(' ', '_')
 			text = text.replace(b,underscore)
@@ -137,6 +163,18 @@ class Analyzer(Frame):
 			return d.language.code # zh = simplified chinese; en = english; zh_Hant = traditional chinese
 		except: # usually an error due to malformed or empty input, so I don't want to have a default return value
 			return None
+
+	def readFile(self, fileName):
+		contents = []
+		f = open(fileName)
+		for line in f:
+			contents.append(line)
+		f.close()
+		result = self.segmentWords('\n'.join(contents)) 
+		return result
+
+	def segmentWords(self, s):
+		return s.split()
 
 
 def main():
