@@ -239,8 +239,10 @@ def get_OECD_art_links(term,pages,chrome):
 		link_objs = soup.findAll('div',{'class':'gsc-webResult gsc-result'})
 		for l in link_objs:
 			links.append(l.find('a')['href'])
-		if pageno < 10:
-			pages_list = chrome.find_elements_by_class_name('gsc-cursor-page')
+		pages_list = chrome.find_elements_by_class_name('gsc-cursor-page')
+		if pageno >= len(pages_list):
+			break
+		else:
 			pages_list[pageno].click() # the array starts from 0, we want the next page, pageno starts at 1, so we can just get [pageno]
 	chrome.quit()
 	pdf_link_list = []
@@ -271,7 +273,7 @@ def save_OECD_links(link_list,language,term):
 	elif language == 'zh_Hant':
 		language = 'traditional'
 	for i,link in enumerate(link_list):
-		print("\r" + str(i) + "/"+str(len(link_list)),end="")
+		print("\r" + str(i+1) + "/"+str(len(link_list)),end="")
 		if not link.endswith('pdf'):
 			continue
 		if not link.startswith('http'):
