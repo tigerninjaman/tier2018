@@ -76,8 +76,7 @@ class Analyzer(Frame):
 		else:
 			if self.w2vmodel == None and not self.load_word2Vec():
 				self.read_add_to_corpus(keyword)
-			keyword = keyword.replace(' ','_')
-			print(keyword)
+			keyword = keyword.replace(' ','_').lower()
 			self.get_word2Vec(keyword)
 
 	def load_word2Vec(self):
@@ -93,7 +92,7 @@ class Analyzer(Frame):
 	def get_word2Vec(self,keyword):
 		if self.w2vmodel == None:
 			print("Training new model...")
-			self.w2vmodel = gs.models.Word2Vec(self.doclist, size=100, window=11, min_count=10, workers=64, iter=100)
+			self.w2vmodel = gs.models.Word2Vec(self.doclist, size=100, window=11, min_count=10, workers=64, iter=1000)
 			self.w2vmodel.train(self.doclist,total_examples=len(self.doclist),epochs=10)
 			
 			filename = 'w2vmodel'
@@ -131,7 +130,6 @@ class Analyzer(Frame):
 					text_as_list = self.process(text)
 					self.doclist.append(text_as_list)
 		print("\nDone. Total documents processed: " + str(len(self.doclist)))
-		print(self.doclist[0])
 		
 
 	def process(self,text): #TODO: write this for chinese
@@ -139,7 +137,7 @@ class Analyzer(Frame):
 		text = text.replace('\n\n','\n')
 		text = text.replace('-',' ')
 		text = text.replace('\'s','')
-		#text = text.replace('a.i.', 'artificial intelligence')
+		text = text.replace('a.i.', 'artificial intelligence')
 		text = text.replace('block chain','blockchain')
 		
 		text = self.alphanum.sub("",text)
