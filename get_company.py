@@ -1,5 +1,6 @@
 from tkinter import Tk, BOTH, RIGHT, RAISED, X, LEFT, Text, N, BooleanVar, StringVar, filedialog
 from tkinter.ttk import Frame, Button, Style, Label, Entry, Checkbutton
+from pdf_to_txt import convert_pdf_to_txt
 import re, os, nltk, spacy
 
 
