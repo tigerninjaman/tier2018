@@ -25,7 +25,7 @@ class Bigram_extractor(Frame):
 		self.bigram_count_dict = {}
 		self.threshold = 2 # minimum bigram count for us to care
 		self.stoplist = set(self.readFile('english.stop'))
-		self.symbols = [',','.','?','!',' ','-','/','(',')','&','\\','$','"',"'","”","“","’","'m","'s"]
+		self.symbols = [',','.','?','!',' ','-','/','(',')','&','\\','$','"',"'","”","“","’","'m","'s","n't","``","--","'d","''",":",";"]
 		self.dual = ['hong kong', 'artificial intelligence', 'elon musk', 'xi jinping'] #list of words that should be processed as 1 token
 		self.initUI()
 
@@ -127,6 +127,7 @@ class Bigram_extractor(Frame):
 						text = f.read()
 				if text == "" or text == None:
 					continue
+				print(text)
 				sentences = nltk.sent_tokenize(text)
 				for sent in sentences:
 					sent_as_list = self.process(sent)
