@@ -117,6 +117,8 @@ class Bigram_extractor(Frame):
 				text = ""
 				print("\rReading texts... " + str(n+1) + "/" + str(len(files)),end="  ")
 				filepath = os.path.join(path,file)
+				if file.startswith('._'):
+					continue
 				if file.endswith('.pdf'):
 					name = filepath.replace('.pdf','.txt')
 					if os.path.isfile(name):
