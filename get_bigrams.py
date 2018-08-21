@@ -12,6 +12,7 @@ from tkinter import Tk, BOTH, RIGHT, RAISED, X, LEFT, Text, N, BooleanVar, Strin
 from tkinter.ttk import Frame, Button, Style, Label, Entry, Checkbutton
 from stemming.porter2 import stem
 from pdf_to_txt import convert_pdf_to_txt
+import pickle
 import os, nltk
 
 
@@ -85,7 +86,11 @@ class Bigram_extractor(Frame):
 			self.keyword = self.keyword.replace(" ", "_")
 			self.keyword = stem(self.keyword)
 			if self.bigram_count_dict == {}:
-				self.read_corpus()
+				path = os.path.join(self.directory.get(),'bigram_count_dict')
+				if os.path.isfile(path + '.pkl'):
+					self.bigram_count_dict = self.load_obj(path)
+				else:
+					self.read_corpus()
 				print('Done.')
 			keyword_association_dict = {}
 			print("Getting associated words...")
@@ -106,8 +111,6 @@ class Bigram_extractor(Frame):
 				print(self.keyword + ' appeared with ' + sorted_dict[i][0] + ' ' + str(sorted_dict[i][1]) + ' times.')
 
 
-
-
 	def read_corpus(self):
 		for path, dirs, files in os.walk(self.directory.get()):
 			for n,file in enumerate(files):
@@ -115,19 +118,27 @@ class Bigram_extractor(Frame):
 				print("\rReading texts... " + str(n+1) + "/" + str(len(files)),end="  ")
 				filepath = os.path.join(path,file)
 				if file.endswith('.pdf'):
-					print(' (pdfs take a while)', end="")
+					name = filepath.replace('.pdf','.txt')
+					if os.path.isfile(name):
+						continue
 					try:
+						print(' (pdfs take a while)', end="")
 						text = convert_pdf_to_txt(filepath)
+						with open(name,'w',encoding='utf-8') as f:
+							f.write(text)
 					except:
 						print('\n'+file + ' could not be opened. Continuing.')
 						continue
 				elif file.endswith('.txt'):
 					print("                    ",end="")
-					with open (filepath,'r',encoding='utf-8') as f:
-						text = f.read()
+					try:
+						with open (filepath,'r',encoding='utf-') as f:
+							text = f.read()
+					except:
+						print('\n' + file + ' could not be opened. Continuing.')
+						continue
 				if text == "" or text == None:
 					continue
-				print(text)
 				sentences = nltk.sent_tokenize(text)
 				for sent in sentences:
 					sent_as_list = self.process(sent)
@@ -139,6 +150,7 @@ class Bigram_extractor(Frame):
 						token = (prevword,curword)
 						self.bigram_count_dict[token] = self.bigram_count_dict.get(token,0) + 1
 		self.bigram_count_dict = {bigram:count for bigram,count in self.bigram_count_dict.items() if count > self.threshold}
+		self.save_obj(self.bigram_count_dict,'bigram_count_dict')
 		print('\n')
 
 	def process(self, text): #should add in a stemmer before word_tokenize
@@ -159,6 +171,16 @@ class Bigram_extractor(Frame):
 				word = 'technology'
 			ret_list.append(stem(word))
 		return ret_list
+
+	def save_obj(self,obj, name):
+		path = os.path.join(self.directory.get(),name)
+		with open(path + '.pkl', 'wb') as f:
+			pickle.dump(obj, f, pickle.HIGHEST_PROTOCOL)
+
+	def load_obj(self,name):
+		print('loading')
+		with open(name + '.pkl', 'rb') as f:
+			return pickle.load(f)
 
 	def readFile(self, fileName):
 		contents = []
