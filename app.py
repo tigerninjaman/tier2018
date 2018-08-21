@@ -11,7 +11,7 @@ from tkinter import Tk, BOTH, RIGHT, RAISED, X, LEFT, Text, N, BooleanVar, Strin
 from tkinter.ttk import Frame, Button, Style, Label, Entry, Checkbutton
 from selenium import webdriver
 import os
-from polyglot.detect import Detector
+#from polyglot.detect import Detector
 
 import myscraper
 
@@ -441,8 +441,8 @@ class App(Frame):
 
 	def detect_language(self, text):
 		try:
-			d = Detector(text)
-			return d.language.code # zh = simplified chinese; en = english; zh_Hant = traditional chinese
+			#d = Detector(text)
+			return 'en'#d.language.code # zh = simplified chinese; en = english; zh_Hant = traditional chinese
 		except: # usually an error due to malformed or empty input, so I don't want to have a default return value
 			return None
 
