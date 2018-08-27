@@ -122,12 +122,19 @@ class Company_extractor(Frame):
 				print("\rReading texts... " + str(n+1) + "/" + str(len(files)),end="  ")
 				filepath = os.path.join(path,file)
 				if file.endswith('.pdf'):
-					# print(' (pdfs take a while)', end="")
-					# try:
-					# 	text = convert_pdf_to_txt(filepath)
-					# except:
-					# 	print('\n'+file + ' could not be opened. Continuing.')
-					continue
+					name = filepath.replace('.pdf','.txt')
+					if os.path.isfile(name):
+						continue
+					try:
+						print(' (pdfs take a while)', end="")
+						text = convert_pdf_to_txt(filepath)
+						with open(name,'w',encoding='utf-8') as f:
+							f.write(text)
+					except:
+						print('\n'+file + ' could not be opened. Continuing.')
+						continue
+				elif file.endswith('.docx'):
+					
 				elif file.endswith('.txt'):
 					print("                    ",end="")
 					with open (filepath,'r',encoding='utf-8') as f:

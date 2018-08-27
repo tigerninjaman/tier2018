@@ -1,19 +1,9 @@
-# preprocess:
-#    remove stop words
-#    convert certain terms (ORG tagged?) to biwords
-#        (ex. artificial intelligence -> artificial_intelligence)
-#    stem
-# read:
-#     bigram counts
-#     trigram counts?
-#         # warning: RAM/storage/search time
-
 from tkinter import Tk, BOTH, RIGHT, RAISED, X, LEFT, Text, N, BooleanVar, StringVar, filedialog
 from tkinter.ttk import Frame, Button, Style, Label, Entry, Checkbutton
 from stemming.porter2 import stem
 from pdf_to_txt import convert_pdf_to_txt
-import pickle
-import os, nltk
+import os, nltk, pickle
+from bs4 import BeautifulSoup as bs
 
 
 class Bigram_extractor(Frame):
@@ -131,10 +121,29 @@ class Bigram_extractor(Frame):
 					except:
 						print('\n'+file + ' could not be opened. Continuing.')
 						continue
+				elif file.endswith('.doc') or file.endswith('.docx'):
+					html_name = filepath.replace('.docx','.html')
+					html_name = html_name.replace('.doc','.html')
+					if os.path.isfile(html_name):
+						continue
+					else:
+						# need to edit for final distribution
+						# TODO: Change this to try and call microsoft word i guess?
+						import subprocess
+						call_list = ["C:\\Program Files\\LibreOffice\\program\\soffice.exe", "--headless", "--convert-to", "html", "--outdir", path,html_name] #then outdir indir
+						subprocess.call(call_list)
+				elif file.endswith('.html'):
+					with open(filepath,'rb') as f:
+							html = f.read()
+						soup = bs(html,'lxml')
+						t_list = soup.findAll('p')
+						text = ""
+						for p in t_list:
+							text = text + p.text
 				elif file.endswith('.txt'):
 					print("                    ",end="")
 					try:
-						with open (filepath,'r',encoding='utf-') as f:
+						with open (filepath,'r',encoding='utf-8') as f:
 							text = f.read()
 					except:
 						print('\n' + file + ' could not be opened. Continuing.')
