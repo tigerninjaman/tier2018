@@ -134,12 +134,12 @@ class Bigram_extractor(Frame):
 						subprocess.call(call_list)
 				elif file.endswith('.html'):
 					with open(filepath,'rb') as f:
-							html = f.read()
-						soup = bs(html,'lxml')
-						t_list = soup.findAll('p')
-						text = ""
-						for p in t_list:
-							text = text + p.text
+						html = f.read()
+					soup = bs(html,'lxml')
+					t_list = soup.findAll('p')
+					text = ""
+					for p in t_list:
+						text = text + p.text
 				elif file.endswith('.txt'):
 					print("                    ",end="")
 					try:
