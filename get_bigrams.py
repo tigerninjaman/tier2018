@@ -156,10 +156,13 @@ class Bigram_extractor(Frame):
 				lang = self.detect_language(text)
 				if lang == 'en':
 					sentences = nltk.sent_tokenize(text)
-				if lang =='zh' or lang == 'zh_Hant':
+				elif lang =='zh' or lang == 'zh_Hant':
 					import re
-					punc_rgx = "\.|。|?|？|!|！"
+					punc_rgx = "\.|。|\?|？|!|！"
 					sentences = re.split(punc_rgx,text)
+				else:
+					print(lang)
+					continue
 				for sent in sentences:
 					sent_as_list = self.process(sent,lang)
 					for i in range(len(sent_as_list)):
@@ -184,6 +187,7 @@ class Bigram_extractor(Frame):
 			as_list = nltk.word_tokenize(text)
 		if language == 'zh' or language == 'zh_Hant':
 			as_list = jieba.lcut(text)
+			print(as_list)
 		ret_list = []
 		for word in as_list:
 			if word in self.stoplist or word in self.symbols:
@@ -196,6 +200,7 @@ class Bigram_extractor(Frame):
 				ret_list.append(stem(word))
 			else:
 				ret_list.append(word)	
+		print(ret_list)
 		return ret_list
 
 	def save_obj(self,obj, name):
@@ -210,7 +215,7 @@ class Bigram_extractor(Frame):
 	
 	def detect_language(self, text):
 		try:
-			d = Detector(text).quiet
+			d = Detector(text)
 			return d.language.code # zh = simplified chinese; en = english; zh_Hant = traditional chinese
 		except: # usually an error due to malformed or empty input, so I don't want to have a default return value
 			return None
