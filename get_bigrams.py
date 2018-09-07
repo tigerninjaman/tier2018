@@ -2,7 +2,8 @@ from tkinter import Tk, BOTH, RIGHT, RAISED, X, LEFT, Text, N, BooleanVar, Strin
 from tkinter.ttk import Frame, Button, Style, Label, Entry, Checkbutton
 from stemming.porter2 import stem
 from pdf_to_txt import convert_pdf_to_txt
-import os, nltk, pickle
+import os, nltk, pickle, jieba
+from polyglot.detect import Detector
 from bs4 import BeautifulSoup as bs
 
 
@@ -16,7 +17,9 @@ class Bigram_extractor(Frame):
 		self.bigram_count_dict = {}
 		self.threshold = 2 # minimum bigram count for us to care
 		self.stoplist = set(self.readFile('english.stop'))
-		self.symbols = [',','.','?','!',' ','-','/','(',')','&','\\','$','"',"'","”","“","’","'m","'s","n't","``","--","'d","''",":",";"]
+		self.stoplist.add('的')
+		self.stoplist.add('了')
+		self.symbols = [',','.','?','!',' ','-','/','(',')','&','\\','$','"',"'","”","“","’","'m","'s","n't","``","--","'d","''",":",";",'。','？','！','\n']
 		self.dual = ['hong kong', 'artificial intelligence', 'elon musk', 'xi jinping'] #list of words that should be processed as 1 token
 		self.initUI()
 
@@ -150,9 +153,15 @@ class Bigram_extractor(Frame):
 						continue
 				if text == "" or text == None:
 					continue
-				sentences = nltk.sent_tokenize(text)
+				lang = self.detect_language(text)
+				if lang == 'en':
+					sentences = nltk.sent_tokenize(text)
+				if lang =='zh' or lang == 'zh_Hant':
+					import re
+					punc_rgx = "\.|。|?|？|!|！"
+					sentences = re.split(punc_rgx,text)
 				for sent in sentences:
-					sent_as_list = self.process(sent)
+					sent_as_list = self.process(sent,lang)
 					for i in range(len(sent_as_list)):
 						if i==0:
 							continue
@@ -164,14 +173,17 @@ class Bigram_extractor(Frame):
 		self.save_obj(self.bigram_count_dict,'bigram_count_dict')
 		print('\n')
 
-	def process(self, text): #should add in a stemmer before word_tokenize
-		text = text.lower()
-		text = text.replace('a.i.', 'artificial intelligence')
-		text = text.replace('block chain','blockchain')
-		for d in self.dual:
-			underscore = d.replace(' ', '_')
-			text = text.replace(d,underscore)
-		as_list = nltk.word_tokenize(text)
+	def process(self, text,language): #should add in a stemmer before word_tokenize
+		if language == 'en':
+			text = text.lower()
+			text = text.replace('a.i.', 'artificial intelligence')
+			text = text.replace('block chain','blockchain')
+			for d in self.dual:
+				underscore = d.replace(' ', '_')
+				text = text.replace(d,underscore)
+			as_list = nltk.word_tokenize(text)
+		if language == 'zh' or language == 'zh_Hant':
+			as_list = jieba.lcut(text)
 		ret_list = []
 		for word in as_list:
 			if word in self.stoplist or word in self.symbols:
@@ -180,7 +192,10 @@ class Bigram_extractor(Frame):
 				word = 'aritifical_intelligence'
 			if word == 'tech':
 				word = 'technology'
-			ret_list.append(stem(word))
+			if language == 'en':
+				ret_list.append(stem(word))
+			else:
+				ret_list.append(word)	
 		return ret_list
 
 	def save_obj(self,obj, name):
@@ -192,6 +207,13 @@ class Bigram_extractor(Frame):
 		print('loading')
 		with open(name + '.pkl', 'rb') as f:
 			return pickle.load(f)
+	
+	def detect_language(self, text):
+		try:
+			d = Detector(text).quiet
+			return d.language.code # zh = simplified chinese; en = english; zh_Hant = traditional chinese
+		except: # usually an error due to malformed or empty input, so I don't want to have a default return value
+			return None
 
 	def readFile(self, fileName):
 		contents = []

@@ -344,7 +344,7 @@ class App(Frame):
 					chrome.quit()
 					options = webdriver.ChromeOptions()
 					options.add_argument('window-size=1,1')
-					chrome = webdriver.Chrome(chrome_options=options)()
+					chrome = webdriver.Chrome(chrome_options=options)
 				else:
 					link_text_dict[link] = text
 			chrome.quit()
@@ -369,7 +369,7 @@ class App(Frame):
 			print("Getting Digitimes links for " + term + "...")
 		options = webdriver.ChromeOptions()
 		options.add_argument('window-size=1,1')
-		chrome = webdriver.Chrome(chrome_options=options)()
+		chrome = webdriver.Chrome(chrome_options=options)
 		link_list = myscraper.get_DGT_art_links(term,pages,chrome)
 		if not link_list:
 			if self.language:
