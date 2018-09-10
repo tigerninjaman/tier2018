@@ -17,7 +17,8 @@ class Bigram_extractor(Frame):
 		self.bigram_count_dict = {}
 		self.threshold = 2 # minimum bigram count for us to care
 		self.stoplist_en = set(self.readFile('english.stop'))
-		self.stoplist_zh = set('的','也','了','可','很',)
+		self.stoplist_zh = set(self.readFile('stopwords-zh.txt'))
+		#Symbols may already be included in the stoplist files. Oh well.
 		self.symbols = [',','.','?','!',' ','-','/','(',')','&','\\','$','"',"'","”","“","’","'m","'s","n't","``","--","'d","''",":",";",'。','？','！','\n','，','、','「','」','《','》']
 		self.dual = ['hong kong', 'artificial intelligence', 'elon musk', 'xi jinping','digital transformation'] #list of words that should be processed as 1 token
 		self.initUI()
@@ -71,12 +72,14 @@ class Bigram_extractor(Frame):
 		elif self.directory.get() == '' or self.directory.get() == '/':
 			self.get_filename()
 		else:
-			self.keyword = self.keyword.lower() #ultimately should process for stuff like a.i. or hong kong
-			self.keyword = self.keyword.replace('a.i.','aritifical_intelligence')
-			if self.keyword == 'ai':
-				self.keyword = 'aritifical_intelligence'
-			self.keyword = self.keyword.replace(" ", "_")
-			self.keyword = stem(self.keyword)
+			lang = self.detect_language(self.keyword)
+			if lang == 'en':
+				self.keyword = self.keyword.lower() #ultimately should process for stuff like a.i. or hong kong
+				self.keyword = self.keyword.replace('a.i.','artifical_intelligence')
+				if self.keyword == 'ai':
+					self.keyword = 'artifical_intelligence'
+				self.keyword = self.keyword.replace(" ", "_")
+				self.keyword = stem(self.keyword)
 			if self.bigram_count_dict == {}:
 				path = os.path.join(self.directory.get(),'bigram_count_dict')
 				if os.path.isfile(path + '.pkl'):
@@ -96,11 +99,13 @@ class Bigram_extractor(Frame):
 						keyword_association_dict[word1] = keyword_association_dict.get(word1,0) + self.bigram_count_dict[bigram]
 			
 			sorted_dict = sorted(keyword_association_dict.items(), key=lambda x: x[1],reverse=True)
-			
-			for i in range(len(sorted_dict)):
-				if i == 10:
-					break
-				print(self.keyword + ' appeared with ' + sorted_dict[i][0] + ' ' + str(sorted_dict[i][1]) + ' times.')
+			if len(sorted_dict) == 0:
+				print('Sorry, couldn\'t find that word in our documents.')
+			else:
+				for i in range(len(sorted_dict)):
+					if i == 10:
+						break
+					print(self.keyword + ' appeared with ' + sorted_dict[i][0] + ' ' + str(sorted_dict[i][1]) + ' times.')
 
 
 	def read_corpus(self):
@@ -190,7 +195,7 @@ class Bigram_extractor(Frame):
 			if word in self.stoplist_en or word in self.stoplist_zh or word in self.symbols:
 				continue
 			if word == 'ai':
-				word = 'aritifical_intelligence'
+				word = 'artifical_intelligence'
 			if word == 'tech':
 				word = 'technology'
 			if language == 'en':

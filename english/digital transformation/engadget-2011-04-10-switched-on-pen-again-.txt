@@ -1,0 +1,4 @@
+  Each week Ross Rubin contributes Switched On, a column about consumer technology.
+
+ 
+Few would want to return to those days of stylus-driven interfaces, but styli can still be helpful for a number of tasks, including diagramming, drawing and sketching, signing documents and handwriting recognition. In this regard, their status has become similar to keyboards on capacitive-touch devices -- great when you need them, but a form factor compromise when you don't. So, just as the ASUS Eee Pad Transformer works with an optional keyboard, HTC will make its Scribe pen an extra, taking a tentative step toward bringing back the stylus, though not a half-hearted one -- the company allows one to write anywhere in the Sense user interface, supporting the stylus input method with the backing of software.
