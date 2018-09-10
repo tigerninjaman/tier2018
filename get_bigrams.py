@@ -16,11 +16,10 @@ class Bigram_extractor(Frame):
 		self.keyword = None
 		self.bigram_count_dict = {}
 		self.threshold = 2 # minimum bigram count for us to care
-		self.stoplist = set(self.readFile('english.stop'))
-		self.stoplist.add('的')
-		self.stoplist.add('了')
-		self.symbols = [',','.','?','!',' ','-','/','(',')','&','\\','$','"',"'","”","“","’","'m","'s","n't","``","--","'d","''",":",";",'。','？','！','\n']
-		self.dual = ['hong kong', 'artificial intelligence', 'elon musk', 'xi jinping'] #list of words that should be processed as 1 token
+		self.stoplist_en = set(self.readFile('english.stop'))
+		self.stoplist_zh = set('的','也','了','可','很',)
+		self.symbols = [',','.','?','!',' ','-','/','(',')','&','\\','$','"',"'","”","“","’","'m","'s","n't","``","--","'d","''",":",";",'。','？','！','\n','，','、','「','」','《','》']
+		self.dual = ['hong kong', 'artificial intelligence', 'elon musk', 'xi jinping','digital transformation'] #list of words that should be processed as 1 token
 		self.initUI()
 
 	def initUI(self):
@@ -161,7 +160,6 @@ class Bigram_extractor(Frame):
 					punc_rgx = "\.|。|\?|？|!|！"
 					sentences = re.split(punc_rgx,text)
 				else:
-					print(lang)
 					continue
 				for sent in sentences:
 					sent_as_list = self.process(sent,lang)
@@ -187,10 +185,9 @@ class Bigram_extractor(Frame):
 			as_list = nltk.word_tokenize(text)
 		if language == 'zh' or language == 'zh_Hant':
 			as_list = jieba.lcut(text)
-			print(as_list)
 		ret_list = []
 		for word in as_list:
-			if word in self.stoplist or word in self.symbols:
+			if word in self.stoplist_en or word in self.stoplist_zh or word in self.symbols:
 				continue
 			if word == 'ai':
 				word = 'aritifical_intelligence'
@@ -200,7 +197,6 @@ class Bigram_extractor(Frame):
 				ret_list.append(stem(word))
 			else:
 				ret_list.append(word)	
-		print(ret_list)
 		return ret_list
 
 	def save_obj(self,obj, name):
