@@ -1,6 +1,6 @@
 from tkinter import Tk, BOTH, RIGHT, RAISED, X, LEFT, Text, N, BooleanVar, StringVar, filedialog
 from tkinter.ttk import Frame, Button, Style, Label, Entry, Checkbutton
-import os, sys, time, string, re, nltk
+import os, sys, time, string, re, nltk, jieba
 import gensim as gs
 from polyglot.detect import Detector
 from pdf_to_txt import convert_pdf_to_txt
@@ -16,9 +16,10 @@ class Analyzer(Frame):
 		self.doclist = [] #just a doclist, for word2vec.
 		self.alphanum = re.compile('[^a-zA-Z0-9 ]')
 		self.alpha = re.compile('[a-zA-Z]')
-		self.stoplist = set(self.readFile('english.stop'))
+		self.stoplist_en = set(self.readFile('english.stop'))
+		self.stoplist_zh = set(self.readFile('stopwords-zh.txt'))
 		self.lemma = nltk.wordnet.WordNetLemmatizer()
-		self.bigrams = ['hong kong', 'artificial intelligence', 'elon musk', 'xi jinping'] #list of words that should be processed as 1 token
+		self.bigrams = ['hong kong', 'artificial intelligence', 'elon musk', 'xi jinping', 'digital transformation'] #list of words that should be processed as 1 token
 		self.plural = ['blockchain', 'elon musk', 'hong kong','limebike','bitcoin','ofo','gogoro','mobike','tesla','spacex']
 		self.initUI()
 
@@ -68,7 +69,10 @@ class Analyzer(Frame):
 			self.doclist = []
 
 	def get_analysis(self):
-		keyword = self.lemma.lemmatize(self.keyword_box.get())
+		keyword = self.keyword_box.get()
+		lang = self.detect_language(keyword)
+		if lang == 'en':
+			keyword = self.lemma.lemmatize(keyword)
 		if self.directory.get() == '' or self.directory.get() == '/':
 			self.get_filename()
 		elif keyword == '':
@@ -76,7 +80,8 @@ class Analyzer(Frame):
 		else:
 			if self.w2vmodel == None and not self.load_word2Vec():
 				self.read_add_to_corpus(keyword)
-			keyword = keyword.replace(' ','_').lower()
+			if lang == 'en':
+				keyword = keyword.replace(' ','_').lower()
 			self.get_word2Vec(keyword)
 
 	def load_word2Vec(self):
@@ -133,25 +138,30 @@ class Analyzer(Frame):
 		
 
 	def process(self,text): #TODO: write this for chinese
-		text = text.lower()
-		text = text.replace('\n\n','\n')
-		text = text.replace('-',' ')
-		text = text.replace('\'s','')
-		text = text.replace('a.i.', 'artificial intelligence')
-		text = text.replace('block chain','blockchain')
-		
-		text = self.alphanum.sub("",text)
-		for p in self.plural:
-			plur = p + 's'
-			text = text.replace(plur,p)
-		for b in self.bigrams:
-			underscore = b.replace(' ', '_')
-			text = text.replace(b,underscore)
+		lang = self.detect_language(text)
 		text_list = []
-		for w in text.split():
-			lemma_w = self.lemma.lemmatize(w)
-			if lemma_w not in self.stoplist:
-				text_list.append(lemma_w)
+		if lang == 'en':
+			text = text.lower()
+			text = text.replace('-',' ')
+			text = text.replace('\'s','')
+			text = text.replace('a.i.', 'artificial intelligence')
+			text = text.replace('block chain','blockchain')
+			text = self.alphanum.sub("",text)
+			for p in self.plural:
+				plur = p + 's'
+				text = text.replace(plur,p)
+			for b in self.bigrams:
+				underscore = b.replace(' ', '_')
+				text = text.replace(b,underscore)
+			for w in text.split():
+				word = self.lemma.lemmatize(w)
+				if word not in self.stoplist_en:
+					text_list.append(word)
+		else:
+			as_list = jieba.lcut(text)
+			for w in as_list:
+				if w not in self.stoplist_zh:
+					text_list.append(w)
 		return text_list
 
 
@@ -164,7 +174,7 @@ class Analyzer(Frame):
 
 	def readFile(self, fileName):
 		contents = []
-		f = open(fileName)
+		f = open(fileName,encoding='utf-8')
 		for line in f:
 			contents.append(line)
 		f.close()
