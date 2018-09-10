@@ -223,7 +223,7 @@ class Bigram_extractor(Frame):
 
 	def readFile(self, fileName):
 		contents = []
-		f = open(fileName)
+		f = open(fileName,encoding='utf-8')
 		for line in f:
 			contents.append(line)
 		f.close()
