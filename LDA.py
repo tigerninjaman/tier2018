@@ -39,12 +39,22 @@ for path,dirs,files in os.walk(d):
 		text_list.append(text)
 
 preprocessed_docs = []
-for t in text_list:
+for n,t in enumerate(text_list):
 	p = preprocess(t)
 	preprocessed_docs.append(p)
-
 print(preprocessed_docs[0])
 print(len(text_list))
 
-
-
+dictionary = gensim.corpora.Dictionary(preprocessed_docs)
+dictionary.filter_extremes(no_below=15,no_above=.5,keep_n=100000)
+bow_corpus = [dictionary.doc2bow(doc) for doc in preprocessed_docs]
+from gensim import corpora, models
+tfidf = models.TfidfModel(bow_corpus)
+corpus_tfidf = tfidf[bow_corpus]
+lda_model = gensim.models.LdaModel(bow_corpus, num_topics=5, id2word=dictionary,passes=2)
+for idx,t in lda_model.print_topics(-1):
+	print('Topic: {} \nWords: {}'.format(idx,t))
+print('\n\n')
+lda_model_tfidf = gensim.models.LdaModel(corpus_tfidf,num_topics=5,id2word=dictionary,passes=2)
+for idx, t in lda_model_tfidf.print_topics(-1):
+	print('Topic: {} \nWords: {}'.format(idx,t))
