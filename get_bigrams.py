@@ -234,7 +234,6 @@ class Bigram_extractor(Frame):
 	#Readfile and segmentwords taken from cs124, for reading stopword files. 
 	#Written in python 2 which is why it's weird.
 	def readFile(self, fileName):
-	def readFile(self, fileName):
 		contents = []
 		f = open(fileName,encoding='utf-8')
 		for line in f:

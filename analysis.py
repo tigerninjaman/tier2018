@@ -1,6 +1,7 @@
 from tkinter import Tk, BOTH, RIGHT, RAISED, X, LEFT, Text, N, BooleanVar, StringVar, filedialog
 from tkinter.ttk import Frame, Button, Style, Label, Entry, Checkbutton
-import os, sys, time, string, re, nltk, jieba
+import os, sys, time, string, jieba
+from nltk.stem import WordNetLemmatizer, SnowballStemmer
 import gensim as gs
 from polyglot.detect import Detector
 from pdf_to_txt import convert_pdf_to_txt
@@ -14,11 +15,11 @@ class Analyzer(Frame):
 		self.directory = StringVar()
 		self.keyword_box = None
 		self.doclist = [] #just a doclist, for word2vec.
-		self.alphanum = re.compile('[^a-zA-Z0-9 ]')
-		self.alpha = re.compile('[a-zA-Z]')
 		self.stoplist_en = set(self.readFile('english.stop'))
 		self.stoplist_zh = set(self.readFile('stopwords-zh.txt'))
-		self.lemma = nltk.wordnet.WordNetLemmatizer()
+		self.punc = self.readFile('punctuation.txt')
+		self.lemma = WordNetLemmatizer()
+		self.stemmer = SnowballStemmer('english')
 		self.bigrams = ['hong kong', 'artificial intelligence', 'elon musk', 'xi jinping', 'digital transformation'] #list of words that should be processed as 1 token
 		self.plural = ['blockchain', 'elon musk', 'hong kong','limebike','bitcoin','ofo','gogoro','mobike','tesla','spacex']
 		self.initUI()
@@ -175,28 +176,22 @@ class Analyzer(Frame):
 	def process(self,text):
 		lang = self.detect_language(text)
 		text_list = []
-		if lang == 'en':
-			text = text.lower()
-			text = text.replace('-',' ')
-			text = text.replace('\'s','')
-			text = text.replace('a.i.', 'artificial intelligence')
-			text = text.replace('block chain','blockchain')
-			text = self.alphanum.sub("",text)
-			for p in self.plural:
-				plur = p + 's' 
-				text = text.replace(plur,p) #Do I need this? Why did I write this?
-			for b in self.bigrams:
-				underscore = b.replace(' ', '_')
-				text = text.replace(b,underscore)
-			for w in text.split():
-				word = self.lemma.lemmatize(w)
-				if word not in self.stoplist_en:
-					text_list.append(word)
-		else:
-			as_list = jieba.lcut(text)
-			for w in as_list:
-				if w not in self.stoplist_zh:
-					text_list.append(w)
+		text = text.lower()
+		text = text.replace('-',' ')
+		text = text.replace('\'s','')
+		text = text.replace('block chain','blockchain')
+		text = text.replace('a.i.', 'artificial intelligence')
+		for p in self.plural:
+			plur = p + 's' 
+			text = text.replace(plur,p) #Do I need this? Why did I write this?
+		for b in self.bigrams:
+			underscore = b.replace(' ', '_')
+			text = text.replace(b,underscore)
+		as_list = jieba.lcut(text)
+		for w in as_list:
+			w = self.stemmer.stem(self.lemma.lemmatize(w))
+			if w not in self.stoplist_en and w not in self.stoplist_zh and w not in self.punc:
+				text_list.append(w)
 		return text_list
 
 	def detect_language(self, text):
