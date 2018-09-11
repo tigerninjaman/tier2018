@@ -58,16 +58,18 @@ class Analyzer(Frame):
 		print("Goodbye!")
 		self.quit()
 
+	#Asks the user to browse to a directory and sets that path as the self.directory variable.
 	def get_filename(self):
 		path = filedialog.askdirectory() #Has an error on the mac, not on windows - bug in tkinter
 		while path == '' or path == '/' or path == '\\':
 			print("Please select a directory for analysis.")
 			path = filedialog.askdirectory()
-		if path != self.directory.get():
+		if path != self.directory.get(): #Clears the variables in case the user wants to run again on a different set of files.
 			self.directory.set(path)
 			self.w2vmodel = None
 			self.doclist = []
 
+	#The main function. Checks for keyword, filepath, and word2vec model; calls read_add if necessary.
 	def get_analysis(self):
 		keyword = self.keyword_box.get()
 		lang = self.detect_language(keyword)
@@ -79,11 +81,12 @@ class Analyzer(Frame):
 			print("Please input a keyword for analysis.")
 		else:
 			if self.w2vmodel == None and not self.load_word2Vec():
-				self.read_add_to_corpus(keyword)
+				self.read_add_to_corpus()
 			if lang == 'en':
 				keyword = keyword.replace(' ','_').lower()
 			self.get_word2Vec(keyword)
 
+	#Loads the word2vec model (if it exists) in the selected directory.
 	def load_word2Vec(self):
 		filename = 'w2vmodel'
 		directory = self.directory.get()
@@ -94,6 +97,8 @@ class Analyzer(Frame):
 		except:
 			return False
 
+	#Creates, trains, and saves word2vec model if necessary.
+	#Outputs top 10 most similar words to the input keyword.
 	def get_word2Vec(self,keyword):
 		if self.w2vmodel == None:
 			print("Training new model...")
@@ -111,33 +116,63 @@ class Analyzer(Frame):
 		except:
 			print("Sorry, we can't find that word in your selected files.")
 
-
-	def read_add_to_corpus(self,keyword):
+	#Reads all documents in the directory and processes them into a list for word2vec.
+	def read_add_to_corpus(self):
 		print("Reading files...")
-		analysis_language = self.detect_language(keyword)
 		directory = self.directory.get()
 		for path, dirs, files in os.walk(directory):
 			for n, file in enumerate(files):
-				print("\r" + str(n+1) + "/" + str(len(files)),end="")
+				text = ""
+				print("\rReading docs: " + str(n+1) + "/" + str(len(files)),end=" ")
 				filepath = os.path.join(path,file)
+				if file.startswith('._'):
+					continue
 				if file.endswith('.pdf'):
-					print(' (pdfs take a while)', end="")
+					name = filepath.replace('.pdf','.txt')
+					if os.path.isfile(name):
+						continue
 					try:
+						print(' (pdfs take a while)', end="")
 						text = convert_pdf_to_txt(filepath)
+						with open(name,'w',encoding='utf-8') as f:
+							f.write(text)
 					except:
 						print('\n'+file + ' could not be opened. Continuing.')
 						continue
+				elif file.endswith('.doc') or file.endswith('.docx'):
+					html_name = filepath.replace('.docx','.html')
+					html_name = html_name.replace('.doc','.html')
+					if os.path.isfile(html_name):
+						continue
+					else:
+						# need to edit for final distribution
+						# TODO: Change this to try and call microsoft word i guess?
+						import subprocess
+						call_list = ["C:\\Program Files\\LibreOffice\\program\\soffice.exe", "--headless", "--convert-to", "html", "--outdir", path,html_name] #then outdir indir
+						subprocess.call(call_list)
+				elif file.endswith('.html'):
+					from bs4 import BeautifulSoup as bs
+					with open(filepath,'rb') as f:
+						html = f.read()
+					soup = bs(html,'lxml')
+					t_list = soup.findAll('p')
+					text = ""
+					for p in t_list:
+						text = text + p.text
 				elif file.endswith('.txt'):
 					print("                    ",end="")
 					with open (filepath, 'r',encoding='utf-8') as f:
 						text = f.read()
-				if self.detect_language(text) == analysis_language:
-					text_as_list = self.process(text)
-					self.doclist.append(text_as_list)
+				else:
+					continue
+				text_as_list = self.process(text)
+				self.doclist.append(text_as_list)
+			print('\n',end="")
 		print("\nDone. Total documents processed: " + str(len(self.doclist)))
 		
-
-	def process(self,text): #TODO: write this for chinese
+	#Processes the text by splitting it into a list and removing stopwords.
+	#For English, also lemmatizes the words.
+	def process(self,text):
 		lang = self.detect_language(text)
 		text_list = []
 		if lang == 'en':
@@ -148,8 +183,8 @@ class Analyzer(Frame):
 			text = text.replace('block chain','blockchain')
 			text = self.alphanum.sub("",text)
 			for p in self.plural:
-				plur = p + 's'
-				text = text.replace(plur,p)
+				plur = p + 's' 
+				text = text.replace(plur,p) #Do I need this? Why did I write this?
 			for b in self.bigrams:
 				underscore = b.replace(' ', '_')
 				text = text.replace(b,underscore)
@@ -164,7 +199,6 @@ class Analyzer(Frame):
 					text_list.append(w)
 		return text_list
 
-
 	def detect_language(self, text):
 		try:
 			d = Detector(text).quiet
@@ -172,6 +206,8 @@ class Analyzer(Frame):
 		except: # usually an error due to malformed or empty input, so I don't want to have a default return value
 			return None
 
+	#Readfile and segmentwords taken from cs124, for reading stopword files. 
+	#Written in python 2 which is why it's weird.
 	def readFile(self, fileName):
 		contents = []
 		f = open(fileName,encoding='utf-8')

@@ -6,7 +6,9 @@ import os, nltk, pickle, jieba
 from polyglot.detect import Detector
 from bs4 import BeautifulSoup as bs
 
-
+#This program asks the user for a directory and a keyword, then reads all files in the directory
+#(.pdf, .html, .doc, .docx, or .txt) into a bigram dictionary and prints out the top-used words
+#in bigrams with the input keyword.
 class Bigram_extractor(Frame):
 	def __init__(self):
 		super().__init__()
@@ -55,6 +57,7 @@ class Bigram_extractor(Frame):
 		print("Goodbye!")
 		self.quit()
 
+	#Asks the user to browse to a directory and sets that path as the self.directory variable.
 	def get_filename(self):
 		path = filedialog.askdirectory() #Has an error on the mac, not on windows - bug in tkinter
 		while path == '' or path == '/' or path == '\\':
@@ -64,7 +67,8 @@ class Bigram_extractor(Frame):
 			self.directory.set(path)
 			self.bigram_count_dict = {}
 
-
+	#The main function. Checks for keyword and directory, loads existing bigram dict if necessary.
+	#If there is no current bigram dict, reads into a new dict, and outputs the top bigrams.
 	def get_bigrams(self):
 		self.keyword = self.keyword_box.get()
 		if self.keyword == None or self.keyword == "":
@@ -107,7 +111,8 @@ class Bigram_extractor(Frame):
 						break
 					print(self.keyword + ' appeared with ' + sorted_dict[i][0] + ' ' + str(sorted_dict[i][1]) + ' times.')
 
-
+	#Reads all documents in the directory, splits them into sentences, and processes them as a list.
+	#Counts into a dictionary of all bigram counts in the corpus.
 	def read_corpus(self):
 		for path, dirs, files in os.walk(self.directory.get()):
 			for n,file in enumerate(files):
@@ -179,7 +184,10 @@ class Bigram_extractor(Frame):
 		self.save_obj(self.bigram_count_dict,'bigram_count_dict')
 		print('\n')
 
-	def process(self, text,language): #should add in a stemmer before word_tokenize
+	#Splits the text and removes stopwords and punctuation. 
+	#For english, also stems and replaces various words.
+	#Returns a list of the remaining text.
+	def process(self, text,language):
 		if language == 'en':
 			text = text.lower()
 			text = text.replace('a.i.', 'artificial intelligence')
@@ -204,11 +212,13 @@ class Bigram_extractor(Frame):
 				ret_list.append(word)	
 		return ret_list
 
+	#Saves a variable to the computer using pickle.
 	def save_obj(self,obj, name):
 		path = os.path.join(self.directory.get(),name)
 		with open(path + '.pkl', 'wb') as f:
 			pickle.dump(obj, f, pickle.HIGHEST_PROTOCOL)
 
+	#Loads a .pkl (pickle) saved variable from the computer.
 	def load_obj(self,name):
 		print('loading')
 		with open(name + '.pkl', 'rb') as f:
@@ -221,6 +231,9 @@ class Bigram_extractor(Frame):
 		except: # usually an error due to malformed or empty input, so I don't want to have a default return value
 			return None
 
+	#Readfile and segmentwords taken from cs124, for reading stopword files. 
+	#Written in python 2 which is why it's weird.
+	def readFile(self, fileName):
 	def readFile(self, fileName):
 		contents = []
 		f = open(fileName,encoding='utf-8')

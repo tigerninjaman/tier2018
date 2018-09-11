@@ -4,7 +4,12 @@ from pdf_to_txt import convert_pdf_to_txt
 import re, os, nltk, spacy
 from bs4 import BeautifulSoup as bs
 
-
+# This is a program to get all companies associated with an input keyword. 
+# The user selects a directory with data (in .pdf, .txt, .doc, .docx, or .html format)
+# and types in a keyword. The program then reads through the entire directory,
+# tagging each text with NER tags. If an ORG tag is in the same sentence as the keyword,
+# then the count for that ORG is increased by one. Finally all elements in the 
+# ORG count dict with a count more than a certain number are printed.
 class Company_extractor(Frame):
 	def __init__(self):
 		super().__init__()
@@ -18,6 +23,7 @@ class Company_extractor(Frame):
 		self.nlp = spacy.load('en_core_web_md')
 		self.initUI()
 
+	# Initializes the button layout. I should learn how to do grids and stuff.
 	def initUI(self):
 		self.style = Style()
 		self.style.theme_use("default")
@@ -61,6 +67,7 @@ class Company_extractor(Frame):
 		print("Goodbye!")
 		self.quit()
 
+	#Asks the user to browse to a directory and sets that path as the self.directory variable.
 	def get_filename(self):
 		path = filedialog.askdirectory() #Has an error on the mac, not on windows - bug in tkinter
 		while path == '' or path == '/' or path == '\\':
@@ -70,6 +77,8 @@ class Company_extractor(Frame):
 			self.directory.set(path)
 			self.org_count_dict = {}
 
+	#Naively checks if name is a 'valid' organization name.
+	#Needed because the NER tagging is imperfect, though I am not sure how much this helps.
 	def is_org_name(self,name):
 		n_tok = name.split()
 		if len(n_tok) == 1:
@@ -79,6 +88,7 @@ class Company_extractor(Frame):
 				return False
 		return True
 
+	#The main function. Sets max/min counts and calls the read_get_counts function.
 	def get_companies(self):
 		new_keyword = self.keyword_box.get()
 		if new_keyword != self.keyword:
@@ -116,6 +126,10 @@ class Company_extractor(Frame):
 				if (max_count == 0 or count <= max_count) and count >= min_count:
 					print(org + ' occured in the text ' + str(count) +' times.')
 
+	#Walks through the entire directory and reads all the files.
+	#If the file is not in .txt or .html format, converts it to such.
+	#Conversion from .doc and .docx (to .html) is done using a subprocess call to LibreOffice,
+	#conversion from .pdf (to .txt) is done using pdf_to_txt which is based on pdfminer.
 	def read_get_counts(self):
 		for path, dirs, files in os.walk(self.directory.get()):
 			for n,file in enumerate(files):
@@ -143,7 +157,7 @@ class Company_extractor(Frame):
 						continue
 					else:
 						# need to edit for final distribution
-						# TODO: Change this to try and call microsoft word i guess?
+						# TODO: Change this to try and call microsoft word I guess?
 						import subprocess
 						call_list = ["C:\\Program Files\\LibreOffice\\program\\soffice.exe", "--headless", "--convert-to", "html", "--outdir", path,html_name] #then outdir indir
 						subprocess.call(call_list)
@@ -168,6 +182,7 @@ class Company_extractor(Frame):
 								org = e.string.strip()
 								if org != "" and org.lower() != self.keyword.lower() and self.is_org_name(org):
 									self.org_count_dict[org] = self.org_count_dict.get(org,0) + 1
+			print('\n',end="")
 		print('\n')
 
 
