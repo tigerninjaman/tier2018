@@ -21,7 +21,7 @@ class Bigram_extractor(Frame):
 		self.stoplist_en = set(self.readFile('english.stop'))
 		self.stoplist_zh = set(self.readFile('stopwords-zh.txt'))
 		#Symbols may already be included in the stoplist files. Oh well.
-		self.symbols = [',','.','?','!',' ','-','/','(',')','&','\\','$','"',"'","”","“","’","'m","'s","n't","``","--","'d","''",":",";",'。','？','！','\n','，','、','「','」','《','》']
+		self.symbols = [' ',',','.','?','!',' ','-','/','(',')','&','\\','$','"',"'","”","“","’","'m","'s","n't","``","--","'d","''",":",";",'。','？','！','\n','，','、','「','」','《','》']
 		self.dual = ['hong kong', 'artificial intelligence', 'elon musk', 'xi jinping','digital transformation'] #list of words that should be processed as 1 token
 		self.initUI()
 
