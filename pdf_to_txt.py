@@ -14,19 +14,23 @@ def save_pdf_link(url,filename):
 
 # From https://stackoverflow.com/questions/5725278/how-do-i-use-pdfminer-as-a-library/8325135
 def convert_pdf_to_txt(path):
+    print('pdf: 1')
     rsrcmgr = PDFResourceManager()
     retstr = io.StringIO()
     codec = 'utf-8'
     laparams = LAParams()
     device = TextConverter(rsrcmgr, retstr, codec=codec, laparams=laparams)
     fp = open(path, 'rb')
+    print('pdf: 2')
     interpreter = PDFPageInterpreter(rsrcmgr, device)
     password = ""
     maxpages = 0
     caching = True
     pagenos=set()
-    for page in PDFPage.get_pages(fp, pagenos, maxpages=maxpages, password=password,caching=caching, check_extractable=True):
+    for n,page in enumerate(PDFPage.get_pages(fp, pagenos, maxpages=maxpages, password=password,caching=caching, check_extractable=True)):
+        print('pdf: page ' + str(n))
         interpreter.process_page(page)
+    print('pdf: 3')
     fp.close()
     device.close()
     

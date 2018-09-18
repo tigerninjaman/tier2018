@@ -25,12 +25,12 @@ def segmentWords(s):
 
 def get_reports():
 	ids = readFile('company_ids.txt')
-	years = range(88,108)
+	years = range(106,108)
 	chrome = webdriver.Chrome()
 	t0 = time.time()
 	t1 = 0
 	for  n,idno in enumerate(ids):
-		if n < 11:
+		if n < 367:
 			continue
 		print('ID no.: ' + str(n) + '/' + str(len(ids)))
 		for y in years:
@@ -96,12 +96,22 @@ def get_reports():
 				html = chrome.page_source
 				soup = bs(html,'lxml')
 				a = soup.find('a')
-				if a:
+				while html.find('下載過量，請稍候!') != -1 or a == None:
+					print('checking')
+					time.sleep(10)
+					chrome.refresh()
+					html = chrome.page_source
+					if html.find('檔案不存在') != -1:
+						print('line 105 breaking')
+						break
+					soup = bs(html,'lxml')
+					a = soup.find('a')
+				if a != None:
 					link = a['href']
 					print('5')
 					download_pdf(link)
-				print('6')
-				print("Downloaded " + str(i) + '/' + str(no_links))
+					print('6')
+					print("Downloaded " + str(i) + '/' + str(no_links))
 				chrome.close()
 				chrome.switch_to_window(chrome.window_handles[0])
 				chrome.get(url)
@@ -118,10 +128,10 @@ def download_pdf(link):
 	filename = sterilize_link(link)
 	r = requests.get(link,allow_redirects=True,timeout=10)
 	try:
-		with open('reports/{}.pdf'.format(filename),'wb') as output:
+		with open('F:/reports/{}.pdf'.format(filename),'wb') as output:
 			output.write(r.content)
 	except:
-		os.makedirs('reports')
+		os.makedirs('F:/reports')
 		with open('reports/{}.pdf'.format(filename),'wb') as output:
 			output.write(r.content)
 

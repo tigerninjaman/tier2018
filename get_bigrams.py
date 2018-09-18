@@ -117,7 +117,7 @@ class Bigram_extractor(Frame):
 		for path, dirs, files in os.walk(self.directory.get()):
 			for n,file in enumerate(files):
 				text = ""
-				print("\rReading texts... " + str(n+1) + "/" + str(len(files)),end="  ")
+				print("\rReading texts... " + str(n+1) + "/" + str(len(files)) + " ",end="")
 				filepath = os.path.join(path,file)
 				if file.startswith('._'):
 					continue
@@ -126,12 +126,14 @@ class Bigram_extractor(Frame):
 					if os.path.isfile(name):
 						continue
 					try:
-						print(' (pdfs take a while)', end="")
+						print("\rReading texts... " + str(n+1) + "/" + str(len(files)) + " (pdfs take a while) ",end="")
 						text = convert_pdf_to_txt(filepath)
+						print('\n1')
 						with open(name,'w',encoding='utf-8') as f:
+							print('2')
 							f.write(text)
 					except:
-						print('\n'+file + ' could not be opened. Continuing.')
+						print('\r'+file + ' could not be opened. Continuing.     ')
 						continue
 				elif file.endswith('.doc') or file.endswith('.docx'):
 					html_name = filepath.replace('.docx','.html')
@@ -158,7 +160,7 @@ class Bigram_extractor(Frame):
 						with open (filepath,'r',encoding='utf-8') as f:
 							text = f.read()
 					except:
-						print('\n' + file + ' could not be opened. Continuing.')
+						print('\r' + file + ' could not be opened. Continuing.    ')
 						continue
 				if text == "" or text == None:
 					continue
@@ -229,6 +231,8 @@ class Bigram_extractor(Frame):
 			d = Detector(text)
 			return d.language.code # zh = simplified chinese; en = english; zh_Hant = traditional chinese
 		except: # usually an error due to malformed or empty input, so I don't want to have a default return value
+			print("\nError!")
+			print(text)
 			return None
 
 	#Readfile and segmentwords taken from cs124, for reading stopword files. 
