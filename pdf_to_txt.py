@@ -28,7 +28,7 @@ def convert_pdf_to_txt(path):
     caching = True
     pagenos=set()
     for n,page in enumerate(PDFPage.get_pages(fp, pagenos, maxpages=maxpages, password=password,caching=caching, check_extractable=True)):
-        print('pdf: page ' + str(n))
+        print('\rpdf: page ' + str(n) + '                                         ',end="")
         interpreter.process_page(page)
     print('pdf: 3')
     fp.close()

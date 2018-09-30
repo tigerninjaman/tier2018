@@ -1,0 +1,150 @@
+artificial intelligence
+ ai 
+a.i.
+deep learning
+machine learning
+neural network
+computer vision
+natural language process
+nlp
+natural language understand
+object recogni
+image recogni
+pattern recogni
+speech recogni
+expert system
+fuzzy logic
+genetic algorithm
+reinforcement learning
+machine perception
+affective computing
+
+big data
+data cloud
+data warehouse
+parallel data process
+data handl
+data manipulat
+data analy
+forecast
+data optimi
+query
+hadoop
+yarn data
+aster
+datameer
+fico 
+blaze data
+platfora
+splunk
+mapreduce
+
+iot
+internet of things
+iiot
+industrial internet of things
+connected system
+connected device
+connectem home
+networked application
+wireless network
+web service
+wireless device
+wireless system
+network
+smart network
+intelligent home
+smart home
+smart device
+transmission control procedure
+lan
+wan
+communication process
+communication control
+network topolog
+data network
+self-organizing network
+sensor network
+
+cybersecurity
+protect
+malicious
+hacking
+backdoor
+cryptograph
+cryptanaly
+crypto
+cyber-threat
+iot security
+internet of things security
+mobile security
+cloud security
+endpoint security
+network security
+telecommunication
+communication security
+multimedia security
+information security
+user access
+user control
+verify
+verificat
+authenticat
+biometric
+intrusion system
+unified threat management
+rootkit
+symmetric key
+encrypt
+decrypt
+ciphertext
+plaintext
+malware
+antivirus
+anti-virus
+phish
+ddos
+dos
+denial of service
+spam
+botnet
+black hat
+white hat
+trojan
+worm
+digital signature
+zero vulnerability
+ransomware
+anti-spoof
+data loss protect
+dlp
+intrusion detect
+ ids 
+
+quantum comput
+quantum anneal
+subatomic particl
+qubit
+quantum circuit
+quantum entangl
+quantum superposit
+
+blockchain
+block-chain
+hash point
+hash
+timestamp and transact
+cryptograph
+cryptolog
+smart contract
+consensus algorithm
+bitcoin
+ethereum
+ripple
+litecoin
+digital token
+
+fog comput
+edge comput
+neuromorphic system
+optical computing

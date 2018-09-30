@@ -30,7 +30,7 @@ def get_reports():
 	t0 = time.time()
 	t1 = 0
 	for  n,idno in enumerate(ids):
-		if n < 367:
+		if n < 1589:
 			continue
 		print('ID no.: ' + str(n) + '/' + str(len(ids)))
 		for y in years:
@@ -44,7 +44,7 @@ def get_reports():
 				continue
 			html = chrome.page_source
 			i = 0
-			while html.find('THE PAGE CANNOT BE ACCESSED!') != -1:
+			while html.find('THE PAGE CANNOT BE ACCESSED!') != -1 or html.find('查詢過量') != -1:
 				if t1 == 0:
 					t1 = time.time()
 					print(str(t1 - t0))
@@ -67,7 +67,7 @@ def get_reports():
 				time.sleep(3)
 				html = chrome.page_source
 				sleep_time = 0
-				while html.find('THE PAGE CANNOT BE ACCESSED!') != -1:
+				while html.find('THE PAGE CANNOT BE ACCESSED!') != -1 or html.find('查詢過量') != -1:
 					if t1 == 0:
 						t1 = time.time()
 						print(str(t1 - t0))
@@ -115,8 +115,6 @@ def get_reports():
 				chrome.close()
 				chrome.switch_to_window(chrome.window_handles[0])
 				chrome.get(url)
-				link_elements_list = chrome.find_elements_by_partial_link_text('.pdf')
-			# print('\r                                                 ',end="")
 	chrome.quit()
 
 def download_pdf(link):
@@ -128,10 +126,10 @@ def download_pdf(link):
 	filename = sterilize_link(link)
 	r = requests.get(link,allow_redirects=True,timeout=10)
 	try:
-		with open('F:/reports/{}.pdf'.format(filename),'wb') as output:
+		with open('reports/{}.pdf'.format(filename),'wb') as output:
 			output.write(r.content)
 	except:
-		os.makedirs('F:/reports')
+		os.makedirs('reports')
 		with open('reports/{}.pdf'.format(filename),'wb') as output:
 			output.write(r.content)
 
