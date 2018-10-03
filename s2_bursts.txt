@@ -1,0 +1,199 @@
+TOWA ENZYME CO
+weighted bursts for network:
+        label begin end   weight
+0  burstLabel     4   5  2.04326
+0 Start: 2015-03-27 End: 2015-07-30
+
+CLEVERSAFE INC
+weighted bursts for network:
+        label begin end   weight
+0  burstLabel    46  48  6.23832
+0 Start: 2011-04-05 End: 2011-04-29
+
+SALESFORCECOM INC
+weighted bursts for query:
+        label begin  end   weight
+0  burstLabel   380  381  8.31777
+0 Start: 2013-08-29 End: 2013-08-30
+
+weighted bursts for network:
+        label begin end   weight
+0  burstLabel    35  37  9.70406
+0 Start: 2010-05-04 End: 2010-05-07
+
+ORACLE OTC SUBSIDIARY LLC
+weighted bursts for forecast:
+        label begin end   weight
+0  burstLabel    12  13  3.46574
+0 Start: 2013-08-07 End: 2013-11-15
+
+ALCATE LUCENT CANADA INC
+weighted bursts for network:
+        label begin end weight
+0  burstLabel     1   1      0
+0 Start: 2011-05-27 End: 2011-05-27
+
+GILAT SATELLITE NETWORKS
+weighted bursts for network:
+        label begin  end  weight
+0  burstLabel   291  293  7.0598
+0 Start: 2013-10-03 End: 2013-10-07
+
+INTERSIL AMERICAS INC
+weighted bursts for protect:
+        label begin end   weight
+0  burstLabel     2   3  1.38629
+0 Start: 2010-11-19 End: 2011-03-17
+
+AT&T INTELLECTUAL PROPERTY 1 LP
+weighted bursts for authenticat:
+        label begin end   weight
+0  burstLabel     2   3  1.38629
+0 Start: 2013-12-13 End: 2017-10-26
+
+TOPSY LABS INC
+weighted bursts for network:
+        label begin end   weight
+0  burstLabel     4   5  2.77259
+0 Start: 2013-03-29 End: 2014-05-19
+
+MEDIATEK SWEDEN AB
+weighted bursts for network:
+        label begin end weight
+0  burstLabel     1   1      0
+0 Start: 2012-11-28 End: 2012-11-28
+
+INTERNATIONAL BUSINESS MACHINES CORPORATON
+weighted bursts for computer vision:
+        label begin end weight
+0  burstLabel     2   2      0
+0 Start: 2016-03-01 End: 2016-03-01
+
+NOKIE TECHNOLOGIES OY
+weighted bursts for query:
+        label begin end   weight
+0  burstLabel     1   2  1.38629
+0 Start: 2012-09-13 End: 2014-12-22
+
+weighted bursts for encrypt:
+        label begin end   weight
+0  burstLabel     1   2  1.38629
+0 Start: 2012-09-13 End: 2014-12-22
+
+weighted bursts for decrypt:
+        label begin end   weight
+0  burstLabel     1   2  1.38629
+0 Start: 2012-09-13 End: 2014-12-22
+
+weighted bursts for  ids :
+        label begin end   weight
+0  burstLabel     1   2  1.38629
+0 Start: 2012-09-13 End: 2014-12-22
+
+BLEKKO INC
+weighted bursts for query:
+        label begin end weight
+0  burstLabel     1   1      0
+0 Start: 2013-04-30 End: 2013-04-30
+
+ROBERT BOSCH LIMITADA
+weighted bursts for protect:
+        label begin end weight
+0  burstLabel     3   3      0
+0 Start: 2017-11-28 End: 2017-11-28
+
+TELEFONAKTIEBOLAGET L M ERRISSON PUBL
+weighted bursts for network:
+        label begin end weight
+0  burstLabel     1   1      0
+0 Start: 2014-10-14 End: 2014-10-14
+
+weighted bursts for telecommunication:
+        label begin end weight
+0  burstLabel     1   1      0
+0 Start: 2014-10-14 End: 2014-10-14
+
+TRANSPACIFIC IP MANAGEMENT GROUP
+weighted bursts for network:
+        label begin end weight
+0  burstLabel     1   1      0
+0 Start: 2014-08-01 End: 2014-08-01
+
+SIEMENS AKTIENGESELLSCHAFT U
+weighted bursts for network:
+        label begin end weight
+0  burstLabel     1   1      0
+0 Start: 2015-07-28 End: 2015-07-28
+
+LNTEL IP CORPORATION
+weighted bursts for protect:
+        label begin end weight
+0  burstLabel     1   1      0
+0 Start: 2016-03-10 End: 2016-03-10
+
+BIOGEN IDEC INC
+weighted bursts for  dos:
+        label begin end   weight
+0  burstLabel    68  69  7.45506
+0 Start: 2015-10-09 End: 2015-10-22
+
+STMICROELECTRONICS ALPS SAS
+weighted bursts for network:
+        label begin  end  weight
+0  burstLabel   292  296  18.715
+0 Start: 2014-01-27 End: 2014-02-03
+
+UNIVERSITE DE BORDEAUX
+weighted bursts for  dos:
+        label begin end   weight
+0  burstLabel    92  93  7.62462
+0 Start: 2014-04-08 End: 2014-05-15
+
+CALIFORNIA INSTITUTE OF TECHNOLOGY
+weighted bursts for query:
+        label begin  end   weight
+0  burstLabel   890  891  12.8027
+0 Start: 2012-09-14 End: 2012-09-15
+
+SANOFI AVENTIS DE MEXICO SA DE CV
+weighted bursts for  dos:
+        label begin end   weight
+0  burstLabel    66  69  15.1663
+0 Start: 2010-05-27 End: 2010-06-10
+
+STMICROELECTRONICS CROLLES 2 SAS
+weighted bursts for network:
+        label begin   end   weight
+0  burstLabel  1685  1688  15.2706
+0 Start: 2017-12-13 End: 2017-12-16
+
+TDK KOREA CORPORATION
+weighted bursts for protect:
+        label begin  end   weight
+0  burstLabel   107  108  7.54859
+0 Start: 2009-06-02 End: 2009-06-03
+
+TOKYO ELECTRON LIMITED
+weighted bursts for decrypt:
+        label begin  end   weight
+0  burstLabel   838  839  6.78982
+0 Start: 2014-12-16 End: 2014-12-17
+
+HEWLETT PACKARD DEVELOPMENT COMPANY LP
+weighted bursts for network:
+        label begin  end  weight
+0  burstLabel   435  436  8.5185
+0 Start: 2010-12-17 End: 2010-12-20
+
+TECHNISCHE UNIVERSITAET BRAUNSCHWEIG
+weighted bursts for  dos:
+        label begin  end   weight
+0  burstLabel   409  410  9.66893
+0 Start: 2014-04-08 End: 2014-04-09
+
+TOYOTA MOTOR ENGINEERING & MANUFACTURING NORTH AMERICA INC
+weighted bursts for network:
+        label begin   end   weight
+0  burstLabel  1507  1508  8.99878
+0 Start: 2014-09-30 End: 2014-10-01
+

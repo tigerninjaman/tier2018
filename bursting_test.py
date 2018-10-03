@@ -3,48 +3,8 @@ import math
 import datetime, xlrd, os
 import burst_detection as bd
 
-
-# file = "C:\\Users\\windows\\Desktop\\google Microsoft and BMW.xlsx"
-# book = xlrd.open_workbook(file)
-# sh = book.sheet_by_index(0)
-# appl_date = sh.col(0)[1:]
-# companies = sh.col(8)[1:]
-# abstracts = sh.col(20)[1:]
-# keyword = 'Artificial intelligence'
-# grouped_by_date = {}
-
-# for i,a in enumerate(abstracts):
-# 	abstract = a.value
-# 	if abstract == 0:
-# 		continue
-# 	date = appl_date[i].value
-# 	date_list = date.split('/')
-# 	orddate = datetime.date(int(date_list[2]),int(date_list[0]),int(date_list[1])).toordinal()
-# 	company = companies[i].value
-# 	if not orddate in grouped_by_date:
-# 		grouped_by_date[orddate] = []
-# 	grouped_by_date[orddate].append((company,abstract))
-
-# r = []
-# d = []
-# for date in sorted(grouped_by_date.keys()):
-# 	d.append(len(grouped_by_date[date]))
-# 	target_events = 0
-# 	for co_abs in grouped_by_date[date]:
-# 		abstract = co_abs[1]
-# 		if abstract.lower().find(keyword.lower()) != -1:
-# 			target_events += 1
-# 	r.append(target_events)
-
-# n = len(r)
-
-# q,d,r,p = bd.burst_detection(r,d,n,s=2,gamma=1,smooth_win=1)
-# bursts = bd.enumerate_bursts(q,'burstLabel')
-# weighted_bursts = bd.burst_weights(bursts,r,d,p)
-# print('weighted bursts:')
-# print(weighted_bursts)
-
-
+# Reads keywords in from the keywords.txt file, separating topics by \n\n.
+# Returns a list of lists.
 def read_keywords():
 	with open('keywords.txt','r') as f:
 		keywords = f.read()
@@ -54,17 +14,80 @@ def read_keywords():
 		topics_list.append(k.split('\n'))
 	return topics_list
 
+# Given a string of company name(s), removes punctuation and returns a list,
+# splitting on '|'.
+def process_company_name(company_name):
+	punc = [',','.','?','!',"'",'"',';',':','(',')','+','[',']',' ltd']
+	company_name = company_name.replace('-',' ')
+	for p in punc:
+		company_name = company_name.replace(p,'')
+	company_name_list = company_name.split('|')
+	return company_name_list
+
+# The excel sheet has entries like "Samsung | Samsung Co., Ltd." which would not match 
+# as a string with another company name entry like simply "Samsung". This function takes 
+# a list of company names, e.g. ["Samsung","Samsung Co., Ltd."] and checks if any of the 
+# list elements exist in any of the keys of the dict grouped_by_company.
+def get_co_name_key_update_dict(co_name_list,grouped_by_company):
+	for co_list in grouped_by_company:
+		for name in co_name_list:
+			if name in co_list:
+				old_list = co_list
+				co_set = set(co_list)
+				co_set.update(co_name_list)
+				if old_list != tuple(co_set):
+					grouped_by_company[tuple(co_set)] = grouped_by_company[old_list]
+					del grouped_by_company[old_list]
+				return tuple(co_set), grouped_by_company
+	co_set = set(co_name_list)
+	grouped_by_company[tuple(co_set)] = {}
+	return tuple(co_set), grouped_by_company
+
+
+# given a list of company names (as cells), converts to string, then checks 
+# through corrections.txt and does the proper replacements. corrections.txt 
+# is a manually-created list based off errors due to misspellings in the .xlsx files.
+# it is formatted as such: correct_spelling:incorrect_1,incorrect_2,incorrect_3
+def correct(companies_list):
+	filename = 'C:\\Users\\windows\\Desktop\\somecode\\corrections.txt'
+	correct_dict = {}
+	new_co_list = []
+	corrections = ""
+	with open(filename,'r') as f:
+		corrections = f.read()
+	corrections = corrections.split('\n')
+	for line in corrections:
+		key_val = line.split(':')
+		correct_dict[key_val[0]] = key_val[1].split(',')
+	for company in companies_list:
+		new_co = company.value.lower()
+		for key in correct_dict:
+			bad_spellings = correct_dict[key]
+			for word in bad_spellings:
+				new_co = new_co.replace(word,key)
+		new_co_list.append(new_co)
+	return new_co_list
+
+
+# Where most of the complication occurs. The data is in excel spreadsheets, with 
+# a column for the date in MM/DD/YYYY format; a column for the company name; and
+# a column for the abstract. Organizes the data in a sorted nested dictionary:
+# dict = {[co_name_1,co_name_2...]:[(ordinal_date_1,[abstract,abstract,...]),(ordinal_date_2,[abstract,abstract,...]),...],[co_name_1,...]:[(date,[abs]),...]}
+# The set of company names is made and updated in get_co_name_key_update_dict.
 def read_abstracts():	
 	grouped_by_company = {}
 	folder = 'C:\\Users\\windows\\Desktop\\patent_data'
 	for file in os.listdir(folder):
-		print(file)
+		print(file + ':')
 		filepath = os.path.join(folder,file)
 		book = xlrd.open_workbook(filepath)
 		sh = book.sheet_by_index(0)
 		appl_date = sh.col(0)[1:]
 		companies = sh.col(3)[1:]
+		print('Correcting names...')
+		companies = correct(companies)
 		abstracts = sh.col(20)[1:]
+		print('Creating dict...')
 		for i,a in enumerate(abstracts):
 			abstract = a.value
 			if abstract == 0:
@@ -72,23 +95,30 @@ def read_abstracts():
 			date = appl_date[i].value
 			date_list = date.split('/')
 			orddate = datetime.date(int(date_list[2]),int(date_list[0]),int(date_list[1])).toordinal()
-			company = companies[i].value.lower()
-			if not company in grouped_by_company:
-				grouped_by_company[company] = {}
-			if str(orddate) not in grouped_by_company[company]:
-				grouped_by_company[company][str(orddate)] = []
-			grouped_by_company[company][str(orddate)].append(abstract)
+			company = companies[i].lower()
+			co_name_list = process_company_name(company)
+			co_key, grouped_by_company = get_co_name_key_update_dict(co_name_list,grouped_by_company)
+			if str(orddate) not in grouped_by_company[co_key]:
+				grouped_by_company[co_key][str(orddate)] = []
+			grouped_by_company[co_key][str(orddate)].append(abstract)
+	print('Sorting dict by date...')
 	for co in grouped_by_company.keys():
 		grouped_by_company[co] = sorted(grouped_by_company[co].items())
 	return grouped_by_company
 
-def main():
-	topics_list = read_keywords()
-	company_date_abstract = read_abstracts()
+
+# Detects the (batched) bursts of occurances of the words in topics_list
+# in company_date_abstract. The code itself is stolen with slight editing from 
+# the github for burst_detection.
+def detect_bursts(company_date_abstract,topics_list):
+	full_save_string = ""
+	err_string = ""
 	for company in company_date_abstract:
+		co_bursts_str = ""
 		co_list = company_date_abstract[company]
 		for topic in topics_list:
 			for keyword in topic:
+				bursts_string = ""
 				r = []
 				d = []
 				for date_abs in co_list:
@@ -96,7 +126,7 @@ def main():
 					d.append(len(abs_list))
 					target_events = 0
 					for ab in abs_list:
-						if ab.lower().find(keyword.lower()) != -1:
+						if str(ab).lower().find(keyword.lower()) != -1:
 							target_events += 1
 					r.append(target_events)
 				n = len(r)
@@ -104,138 +134,50 @@ def main():
 				if all(elem == 0 for elem in r):
 					continue
 				try:
-					q,d,r,p = bd.burst_detection(r,d,n,s=2,gamma=1,smooth_win=1)
-				except:
-					print(d)
-					print(r)
+					q,d,r,p = bd.burst_detection(r,d,n,s=1.5,gamma=1,smooth_win=1) # I think the error here is that s = 2 and for 1x2 arrays of r = [1,0] and [1,1] respectively, p[0] = 1/2 so then p=1 (line 60 of burst_detection) which causes an error in line 29 of init in burst_detection. unsure if this is the error since I can't replicate on my console.
+				except ValueError:
+					r_str = str(r)
+					d_str = str(d)
+					err_string = err_string + str(company) +' kw: ' + keyword + ' r: ' + r_str + ' d: ' +d_str + '\n'
+					continue
+				except Exception as e:
+					print('Error: ' + repr(e))
 					continue
 				bursts = bd.enumerate_bursts(q,'burstLabel')
 				weighted_bursts = bd.burst_weights(bursts,r,d,p)
 				if weighted_bursts.empty:
 					continue
-				print('-------------------------')
-				print('  ' + company.upper())
-				print('-------------------------')
-				print('weighted bursts for ' + keyword + ':')
-				print(weighted_bursts)
-		print('\n')
+
+				kw_str = 'weighted bursts for ' + keyword + ':' + '\n'
+				bursts_string = kw_str + str(weighted_bursts) + '\n'
+				beg_list = weighted_bursts['begin']
+				end_list = weighted_bursts['end']
+				for i in range(len(beg_list)):
+					start_index = beg_list[i]
+					end_index = end_list[i]
+					start_date = datetime.date.fromordinal(int(co_list[start_index][0]))
+					end_date = datetime.date.fromordinal(int(co_list[end_index][0]))
+					date_str = '{} Start: {} End: {}\n\n'.format(i,start_date,end_date)
+					bursts_string = bursts_string + date_str
+				co_bursts_str = co_bursts_str + bursts_string
+		if co_bursts_str != "":
+			co_bursts_str = company[0].upper() + '\n' + co_bursts_str
+			full_save_string += co_bursts_str
+	with open('bursts.txt','w') as f:
+		f.write(full_save_string)
+	with open('bursts_errors.txt','w') as f:
+		f.write(err_string)
+
+
+
+def main():
+	print('Reading keywords...')
+	topics_list = read_keywords()
+	print('Reading data...')
+	company_date_abstract = read_abstracts()
+	print('Detecting bursts...')
+	detect_bursts(company_date_abstract,topics_list)
+
+
 if __name__ == '__main__':
 	main()
-
-
-# contains_index_list = []
-# for i,a in enumerate(abstracts):
-# 	if a.value != 0.0 and a.value.find(keyword) != -1:
-# 		contains_index_list.append(i)
-
- 
-# def kleinberg(offsets, s=2, gamma=1):
- 
-# 	if s <= 1:
-# 		raise ValueError("s must be greater than 1!")
-# 	if gamma <= 0:
-# 		raise ValueError("gamma must be positive!")
-# 	if len(offsets) < 1:
-# 		raise ValueError("offsets must be non-empty!")
- 
-# 	offsets = np.array(offsets, dtype=object)
-	
-# 	if offsets.size == 1:
-# 		bursts = np.array([0, offsets[0], offsets[0]], ndmin=2, dtype=object)
-# 		return bursts
- 
-# 	offsets = np.sort(offsets)
-# 	gaps = np.diff(offsets)
- 
-# 	if not np.all(gaps):
-# 		raise ValueError("Input cannot contain events with zero time between!")
- 
-# 	T = np.sum(gaps)
-# 	n = np.size(gaps)
-# 	g_hat = T / n
- 
-# 	k = int(math.ceil(float(1 + math.log(T, s) + math.log(1 / np.amin(gaps), s))))
- 
-# 	gamma_log_n = gamma * math.log(n)
- 
-# 	def tau(i, j):
-# 		if i >= j:
-# 			return 0
-# 		else:
-# 			return (j - i) * gamma_log_n
-	
-# 	alpha_function = np.vectorize(lambda x: s ** x / g_hat)
-# 	alpha = alpha_function(np.arange(k))
- 
-# 	def f(j, x):
-# 		return alpha[j] * math.exp(-alpha[j] * x)
- 
-# 	C = np.repeat(float("inf"), k)
-# 	C[0] = 0
- 
-# 	q = np.empty((k, 0))
-# 	for t in range(n):
-# 		C_prime = np.repeat(float("inf"), k)
-# 		q_prime = np.empty((k, t+1))
-# 		q_prime.fill(np.nan)
- 
-# 		for j in range(k):
-# 			cost_function = np.vectorize(lambda x: C[x] + tau(x, j))
-# 			cost = cost_function(np.arange(0, k))
- 
-# 			el = np.argmin(cost)
- 
-# 			if f(j, gaps[t]) > 0:
-# 				C_prime[j] = cost[el] - math.log(f(j, gaps[t]))
-			
-# 			if t > 0:
-# 				q_prime[j,:t] = q[el,:]
- 
-# 			q_prime[j, t] = j + 1
- 
-# 		C = C_prime
-# 		q = q_prime
- 
-# 	j = np.argmin(C)
-# 	q = q[j,:]
- 
-# 	prev_q = 0
-	
-# 	N = 0
-# 	for t in range(n):
-# 		if q[t] > prev_q:
-# 			N = N + q[t] - prev_q
-# 		prev_q = q[t]
- 
-# 	bursts = np.array([np.repeat(np.nan, N), np.repeat(offsets[0],N),np.repeat(offsets[0], N)], ndmin=2, dtype=object).transpose()
- 
-# 	burst_counter = -1
-# 	prev_q = 0
-# 	stack = np.repeat(np.nan, N)
-# 	stack_counter = -1
-# 	for t in range(n):
-# 		if q[t] > prev_q:
-# 			num_levels_opened = q[t] - prev_q
-# 			for i in range(int(num_levels_opened)):
-# 				burst_counter += 1
-# 				bursts[burst_counter, 0] = prev_q + i
-# 				bursts[burst_counter, 1] = offsets[t]
-# 				stack_counter += 1
-# 				stack[stack_counter] = burst_counter
-# 		elif q[t] < prev_q:
-# 			num_levels_closed = prev_q - q[t]
-# 			for i in range(int(num_levels_closed)):
-# 				# print(offsets[t])
-# 				# print(stack_counter)
-# 				# print(stack[stack_counter])
-# 				bursts[int(stack[stack_counter]), 2] = offsets[t]
-# 				stack_counter -= 1
-# 		prev_q = q[t] 
- 
-# 	while stack_counter >= 0:
-# 		bursts[int(stack[stack_counter]), 2] = offsets[n]
-# 		stack_counter -= 1
- 
-# 	return bursts
-
-# print(kleinberg(contains_index_list))

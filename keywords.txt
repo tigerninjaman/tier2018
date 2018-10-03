@@ -31,7 +31,7 @@ data optimi
 query
 hadoop
 yarn data
-aster
+ aster
 datameer
 fico 
 blaze data
@@ -39,7 +39,7 @@ platfora
 splunk
 mapreduce
 
-iot
+ iot
 internet of things
 iiot
 industrial internet of things
@@ -55,10 +55,11 @@ network
 smart network
 intelligent home
 smart home
+smarthome
 smart device
 transmission control procedure
-lan
-wan
+ lan
+ wan
 communication process
 communication control
 network topolog
@@ -104,7 +105,7 @@ antivirus
 anti-virus
 phish
 ddos
-dos
+ dos
 denial of service
 spam
 botnet

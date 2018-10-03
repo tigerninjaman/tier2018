@@ -1,25 +1,26 @@
 import os
 from pdf_to_txt import convert_pdf_to_txt
 error = 0
-for path, dirs, files in os.walk('C:\\Users\\windows\\Desktop\\lots'):
+already_converted = 0
+for path, dirs, files in os.walk('F:\\reports'):
 	for n,file in enumerate(files):
 		text = ""
-		print("\rReading texts... " + str(n+1) + "/" + str(len(files)) + " ",end="")
 		filepath = os.path.join(path,file)
-		if file.startswith('._'):
+		if file.endswith('.txt') or file.startswith('._'):
 			continue
 		if file.endswith('.pdf'):
 			name = filepath.replace('.pdf','.txt')
 			if os.path.isfile(name):
+				already_converted +=1
 				continue
 			try:
-				print("\rReading texts... " + str(n+1) + "/" + str(len(files)) + " (pdfs take a while) ",end="")
+				print("\rReading texts... " + str(n+1) + "/" + str(len(files)),end="")
 				text = convert_pdf_to_txt(filepath)
-				print('\n1')
 				with open(name,'w',encoding='utf-8') as f:
-					print('2')
 					f.write(text)
-			except:
+			except Exception as e:
 				error += 1
-				print('\r'+file + ' could not be opened. Continuing. Error: ' + str(error))
+				print(repr(e))
+				print(file)
 				continue
+print(already_converted)
