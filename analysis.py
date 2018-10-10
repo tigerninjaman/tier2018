@@ -128,18 +128,20 @@ class Analyzer(Frame):
 				filepath = os.path.join(path,file)
 				if file.startswith('._'):
 					continue
+				if file.find('pdf-2018_') == -1:
+					continue
 				if file.endswith('.pdf'):
 					name = filepath.replace('.pdf','.txt')
 					if os.path.isfile(name):
 						continue
-					try:
-						print(' (pdfs take a while)', end="")
-						text = convert_pdf_to_txt(filepath)
-						with open(name,'w',encoding='utf-8') as f:
-							f.write(text)
-					except:
-						print('\n'+file + ' could not be opened. Continuing.')
-						continue
+					# try:
+					# 	print(' (pdfs take a while)', end="")
+					# 	text = convert_pdf_to_txt(filepath)
+					# 	with open(name,'w',encoding='utf-8') as f:
+					# 		f.write(text)
+					# except:
+					# 	print('\n'+file + ' could not be opened. Continuing.')
+					# 	continue
 				elif file.endswith('.doc') or file.endswith('.docx'):
 					html_name = filepath.replace('.docx','.html')
 					html_name = html_name.replace('.doc','.html')

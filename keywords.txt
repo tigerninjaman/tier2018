@@ -1,17 +1,17 @@
 artificial intelligence
- ai 
+ai
 a.i.
 deep learning
 machine learning
 neural network
 computer vision
-natural language process
+natural language processing
 nlp
-natural language understand
-object recogni
-image recogni
-pattern recogni
-speech recogni
+natural language understanding
+object recognition
+image recognition
+pattern recognition
+speech recognition
 expert system
 fuzzy logic
 genetic algorithm
@@ -22,24 +22,24 @@ affective computing
 big data
 data cloud
 data warehouse
-parallel data process
-data handl
-data manipulat
-data analy
+parallel data processing
+data handling
+data manipulation
+data analysis
 forecast
-data optimi
+data optimization
 query
 hadoop
 yarn data
- aster
+aster
 datameer
-fico 
+fico
 blaze data
 platfora
 splunk
 mapreduce
 
- iot
+iot
 internet of things
 iiot
 industrial internet of things
@@ -58,8 +58,8 @@ smart home
 smarthome
 smart device
 transmission control procedure
- lan
- wan
+lan
+wan
 communication process
 communication control
 network topolog
@@ -72,7 +72,7 @@ protect
 malicious
 hacking
 backdoor
-cryptograph
+cryptography
 cryptanaly
 crypto
 cyber-threat
@@ -89,8 +89,8 @@ information security
 user access
 user control
 verify
-verificat
-authenticat
+verification
+authenticate
 biometric
 intrusion system
 unified threat management
@@ -105,7 +105,7 @@ antivirus
 anti-virus
 phish
 ddos
- dos
+dos
 denial of service
 spam
 botnet
@@ -117,26 +117,26 @@ digital signature
 zero vulnerability
 ransomware
 anti-spoof
-data loss protect
+data loss protection
 dlp
-intrusion detect
- ids 
+intrusion detection
+ids 
 
-quantum comput
-quantum anneal
-subatomic particl
+quantum computing
+quantum annealing
+subatomic particle
 qubit
 quantum circuit
-quantum entangl
-quantum superposit
+quantum entanglement
+quantum superposition
 
 blockchain
 block-chain
 hash point
 hash
-timestamp and transact
-cryptograph
-cryptolog
+timestamp and transaction
+cryptography
+cryptology
 smart contract
 consensus algorithm
 bitcoin
@@ -145,7 +145,7 @@ ripple
 litecoin
 digital token
 
-fog comput
-edge comput
+fog computing
+edge computing
 neuromorphic system
 optical computing

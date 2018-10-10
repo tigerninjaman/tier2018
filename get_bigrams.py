@@ -114,6 +114,7 @@ class Bigram_extractor(Frame):
 	#Reads all documents in the directory, splits them into sentences, and processes them as a list.
 	#Counts into a dictionary of all bigram counts in the corpus.
 	def read_corpus(self):
+		to_be_converted = ""
 		for path, dirs, files in os.walk(self.directory.get()):
 			for n,file in enumerate(files):
 				text = ""
@@ -125,16 +126,18 @@ class Bigram_extractor(Frame):
 					name = filepath.replace('.pdf','.txt')
 					if os.path.isfile(name):
 						continue
-					try:
-						print("\rReading texts... " + str(n+1) + "/" + str(len(files)) + " (pdfs take a while) ",end="")
-						text = convert_pdf_to_txt(filepath)
-						print('\n1')
-						with open(name,'w',encoding='utf-8') as f:
-							print('2')
-							f.write(text)
-					except:
-						print('\r'+file + ' could not be opened. Continuing.     ')
-						continue
+					else:
+						to_be_converted = to_be_converted + file + '\n'
+					# try:
+					# 	print("\rReading texts... " + str(n+1) + "/" + str(len(files)) + " (pdfs take a while) ",end="")
+					# 	text = convert_pdf_to_txt(filepath)
+					# 	print('\n1')
+					# 	with open(name,'w',encoding='utf-8') as f:
+					# 		print('2')
+					# 		f.write(text)
+					# except:
+					# 	print('\r'+file + ' could not be opened. Continuing.     ')
+					# 	continue
 				elif file.endswith('.doc') or file.endswith('.docx'):
 					html_name = filepath.replace('.docx','.html')
 					html_name = html_name.replace('.doc','.html')
@@ -155,12 +158,11 @@ class Bigram_extractor(Frame):
 					for p in t_list:
 						text = text + p.text
 				elif file.endswith('.txt'):
-					print("                    ",end="")
 					try:
 						with open (filepath,'r',encoding='utf-8') as f:
 							text = f.read()
-					except:
-						print('\r' + file + ' could not be opened. Continuing.    ')
+					except Exception as e:
+						print(repr(e))
 						continue
 				if text == "" or text == None:
 					continue
@@ -168,6 +170,8 @@ class Bigram_extractor(Frame):
 				if lang == 'en':
 					sentences = nltk.sent_tokenize(text)
 				elif lang =='zh' or lang == 'zh_Hant':
+					text = text.replace(' ','')
+					text = text.replace('\n','')
 					import re
 					punc_rgx = "\.|。|\?|？|!|！"
 					sentences = re.split(punc_rgx,text)
@@ -184,6 +188,8 @@ class Bigram_extractor(Frame):
 						self.bigram_count_dict[token] = self.bigram_count_dict.get(token,0) + 1
 		self.bigram_count_dict = {bigram:count for bigram,count in self.bigram_count_dict.items() if count > self.threshold}
 		self.save_obj(self.bigram_count_dict,'bigram_count_dict')
+		with open('to_be_converted.txt','w') as f:
+			f.write(to_be_converted)
 		print('\n')
 
 	#Splits the text and removes stopwords and punctuation. 
@@ -222,7 +228,6 @@ class Bigram_extractor(Frame):
 
 	#Loads a .pkl (pickle) saved variable from the computer.
 	def load_obj(self,name):
-		print('loading')
 		with open(name + '.pkl', 'rb') as f:
 			return pickle.load(f)
 	
@@ -230,9 +235,8 @@ class Bigram_extractor(Frame):
 		try:
 			d = Detector(text)
 			return d.language.code # zh = simplified chinese; en = english; zh_Hant = traditional chinese
-		except: # usually an error due to malformed or empty input, so I don't want to have a default return value
-			print("\nError!")
-			print(text)
+		except Exception as e: # usually an error due to malformed or empty input, so I don't want to have a default return value
+			print(' detect: ' + repr(e))
 			return None
 
 	#Readfile and segmentwords taken from cs124, for reading stopword files. 

@@ -2,17 +2,41 @@ import numpy as np
 import math
 import datetime, xlrd, os
 import burst_detection as bd
+import nltk
+from stemming.porter2 import stem
 
 # Reads keywords in from the keywords.txt file, separating topics by \n\n.
 # Returns a list of lists.
 def read_keywords():
-	with open('keywords.txt','r') as f:
-		keywords = f.read()
-	keywords_list = keywords.split('\n\n')
 	topics_list = []
-	for k in keywords_list:
+	with open('keywords.txt','r') as f:
+		keywords_txt = f.read()
+	keywords_txt = keywords_txt.replace(' ','_')
+	split_keywords = keywords_txt.split('\n\n')
+	for k in split_keywords:
 		topics_list.append(k.split('\n'))
+	stemmed_t_list = []
+	for t in topics_list:
+		stemmed_t = []
+		for w in t:
+			w = stem(w)
+			stemmed_t.append(w)
+		stemmed_t_list.append(stemmed_t)
+	topics_list = stemmed_t_list
 	return topics_list
+
+def process_abstract(abstract):
+	with open('keywords.txt','r') as f:
+		words_list = f.read()
+	words_list = words_list.replace('\n\n','\n')
+	words_list = words_list.split('\n')
+	for word in words_list:
+		if word.find(' ') != -1:
+			if abstract.find(word) != -1:
+				abstract = abstract.replace(word,stem(word.replace(' ','_')))
+			if abstract.find(stem(word)) != -1:
+				abstract = abstract.replace(stem(word),stem(word.replace(' ','_')))
+	return nltk.word_tokenize(abstract)
 
 # Given a string of company name(s), removes punctuation and returns a list,
 # splitting on '|'.
@@ -42,6 +66,19 @@ def get_co_name_key_update_dict(co_name_list,grouped_by_company):
 	co_set = set(co_name_list)
 	grouped_by_company[tuple(co_set)] = {}
 	return tuple(co_set), grouped_by_company
+
+def keyword_in_abstract(keyword,abstract):
+	keyword = keyword.lower()
+	abstract = abstract.lower()
+	if keyword.find(' ') != -1:
+		old_keyword = keyword
+		keyword = keyword.replace(' ','_')
+		abstract = abstract.replace(old_keyword,keyword)
+	abstract_list = nltk.word_tokenize(abstract)
+	for word in abstract_list:
+		if stem(word) == stem(keyword):
+			return True
+	return False
 
 
 # given a list of company names (as cells), converts to string, then checks 
@@ -92,6 +129,9 @@ def read_abstracts():
 			abstract = a.value
 			if abstract == 0:
 				continue
+			if abstract != str(abstract):
+				continue
+			abstract = process_abstract(abstract)
 			date = appl_date[i].value
 			date_list = date.split('/')
 			orddate = datetime.date(int(date_list[2]),int(date_list[0]),int(date_list[1])).toordinal()
@@ -116,54 +156,54 @@ def detect_bursts(company_date_abstract,topics_list):
 	for company in company_date_abstract:
 		co_bursts_str = ""
 		co_list = company_date_abstract[company]
-		for topic in topics_list:
-			for keyword in topic:
-				bursts_string = ""
-				r = []
-				d = []
-				for date_abs in co_list:
-					abs_list = date_abs[1]
-					d.append(len(abs_list))
-					target_events = 0
-					for ab in abs_list:
-						if str(ab).lower().find(keyword.lower()) != -1:
+		for i,topic in enumerate(topics_list):
+			bursts_string = ""
+			r = []
+			d = []
+			for date_abs in co_list:
+				abs_list = date_abs[1]
+				d.append(len(abs_list))
+				target_events = 0
+				for ab in abs_list:
+					for keyword in topic:
+						if keyword in ab:
 							target_events += 1
-					r.append(target_events)
-				n = len(r)
+							break
+				r.append(target_events)
+			n = len(r)
 
-				if all(elem == 0 for elem in r):
-					continue
-				try:
-					q,d,r,p = bd.burst_detection(r,d,n,s=1.5,gamma=1,smooth_win=1) # I think the error here is that s = 2 and for 1x2 arrays of r = [1,0] and [1,1] respectively, p[0] = 1/2 so then p=1 (line 60 of burst_detection) which causes an error in line 29 of init in burst_detection. unsure if this is the error since I can't replicate on my console.
-				except ValueError:
-					r_str = str(r)
-					d_str = str(d)
-					err_string = err_string + str(company) +' kw: ' + keyword + ' r: ' + r_str + ' d: ' +d_str + '\n'
-					continue
-				except Exception as e:
-					print('Error: ' + repr(e))
-					continue
-				bursts = bd.enumerate_bursts(q,'burstLabel')
-				weighted_bursts = bd.burst_weights(bursts,r,d,p)
-				if weighted_bursts.empty:
-					continue
+			if all(elem == 0 for elem in r):
+				continue
+			try:
+				q,d,r,p = bd.burst_detection(r,d,n,s=1.5,gamma=1.0,smooth_win=1) # I think the error here is that s = 2 and for 1x2 arrays of r = [1,0] and [1,1] respectively, p[0] = 1/2 so then p=1 (line 60 of burst_detection) which causes an error in line 29 of init in burst_detection. unsure if this is the error since I can't replicate on my console.
+			except ValueError:
+				r_str = str(r)
+				d_str = str(d)
+				continue
+			except Exception as e:
+				print('Error: ' + repr(e))
+				continue
+			bursts = bd.enumerate_bursts(q,'burstLabel')
+			weighted_bursts = bd.burst_weights(bursts,r,d,p)
+			if weighted_bursts.empty:
+				continue
 
-				kw_str = 'weighted bursts for ' + keyword + ':' + '\n'
-				bursts_string = kw_str + str(weighted_bursts) + '\n'
-				beg_list = weighted_bursts['begin']
-				end_list = weighted_bursts['end']
-				for i in range(len(beg_list)):
-					start_index = beg_list[i]
-					end_index = end_list[i]
-					start_date = datetime.date.fromordinal(int(co_list[start_index][0]))
-					end_date = datetime.date.fromordinal(int(co_list[end_index][0]))
-					date_str = '{} Start: {} End: {}\n\n'.format(i,start_date,end_date)
-					bursts_string = bursts_string + date_str
-				co_bursts_str = co_bursts_str + bursts_string
+			kw_str = 'weighted bursts for topic no. ' + str(i) + ':' + '\n'
+			bursts_string = kw_str + str(weighted_bursts) + '\n'
+			beg_list = weighted_bursts['begin']
+			end_list = weighted_bursts['end']
+			for i in range(len(beg_list)):
+				start_index = beg_list[i]
+				end_index = end_list[i]
+				start_date = datetime.date.fromordinal(int(co_list[start_index][0]))
+				end_date = datetime.date.fromordinal(int(co_list[end_index][0]))
+				date_str = '{} Start: {} End: {}\n\n'.format(i,start_date,end_date)
+				bursts_string = bursts_string + date_str
+			co_bursts_str = co_bursts_str + bursts_string
 		if co_bursts_str != "":
 			co_bursts_str = company[0].upper() + '\n' + co_bursts_str
 			full_save_string += co_bursts_str
-	with open('bursts.txt','w') as f:
+	with open('bursts_by_topic.txt','w') as f:
 		f.write(full_save_string)
 	with open('bursts_errors.txt','w') as f:
 		f.write(err_string)
