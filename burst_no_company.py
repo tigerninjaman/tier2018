@@ -101,7 +101,7 @@ def get_bursts(topics_list,date_abs):
 					continue
 			print('calculating the bursts')
 			try:
-				q,d,r,p = bd.burst_detection(r,d,n,s=1.5,gamma=1.0,smooth_win=1)
+				q,d,r,p = bd.burst_detection(r,d,n,s=2.2,gamma=1.0,smooth_win=1)
 			except Exception as e:
 				print('Error: ' + repr(e))
 				continue
