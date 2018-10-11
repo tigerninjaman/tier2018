@@ -9,7 +9,9 @@ from nltk.stem import WordNetLemmatizer, SnowballStemmer
 from nltk.stem.porter import *
 import nltk
 import jieba
-nltk.download('wordnet')
+#nltk.download('wordnet')
+from gensim import corpora, models
+
 
 stemmer = SnowballStemmer('english')
 
@@ -29,18 +31,25 @@ def segmentWords(s):
 	return s.split()
 
 stoplist_zh = set(readFile('stopwords-zh.txt'))
+punctuation = set(readFile('punctuation.txt'))
+alphanum = set(['%','.','|','\t','0','1','2','3','4','5','6','7','8','9','a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z'])
 
 def lemmatize_stemming(text):
     return stemmer.stem(WordNetLemmatizer().lemmatize(text, pos='v'))
 
 def preprocess(text):
     result = []
+    text = text.lower()
+    for a in alphanum:
+            text = text.replace(a,'')
+    text = text.replace('\n',' ')
+    text = text.replace(' ','')
     for token in jieba.lcut(text):
-    	if token not in stoplist_zh:
+    	if token not in stoplist_zh and token not in punctuation:
     		result.append(token)
-    for token in gensim.utils.simple_preprocess(text):
-    	if token not in gensim.parsing.preprocessing.STOPWORDS and len(token) > 3:
-             result.append(lemmatize_stemming(token))
+#    for token in gensim.utils.simple_preprocess(text):
+#    	if token not in gensim.parsing.preprocessing.STOPWORDS and len(token) > 3:
+#             result.append(lemmatize_stemming(token))
     return result
 
 
@@ -52,7 +61,7 @@ for path,dirs,files in os.walk(d):
 	for file in files:
 		if file.startswith('._') or not file.endswith('.txt'):
 			continue
-		if file.find('-2017_') == -1 and file.find('-2018_') == -1:
+		if file.find('_2330_') == -1: #file.find('-2017_') == -1 and file.find('-2018_') == -1:
 			continue
 		try:
 			with open(os.path.join(path,file),'r') as f:
@@ -70,15 +79,14 @@ for n,t in enumerate(text_list):
 print(len(text_list))
 
 dictionary = gensim.corpora.Dictionary(preprocessed_docs)
-dictionary.filter_extremes(no_below=15,no_above=.5,keep_n=100000)
+dictionary.filter_extremes(no_below=10,no_above=.5,keep_n=100000)
 bow_corpus = [dictionary.doc2bow(doc) for doc in preprocessed_docs]
-from gensim import corpora, models
 tfidf = models.TfidfModel(bow_corpus)
 corpus_tfidf = tfidf[bow_corpus]
-lda_model = gensim.models.LdaModel(bow_corpus, num_topics=5, id2word=dictionary,passes=2)
+lda_model = gensim.models.LdaModel(bow_corpus, num_topics=4, id2word=dictionary,passes=2)
 for idx,t in lda_model.print_topics(-1):
 	print('Topic: {} \nWords: {}'.format(idx,t))
 print('\n\n')
-lda_model_tfidf = gensim.models.LdaModel(corpus_tfidf,num_topics=5,id2word=dictionary,passes=2)
+lda_model_tfidf = gensim.models.LdaModel(corpus_tfidf,num_topics=4,id2word=dictionary,passes=2)
 for idx, t in lda_model_tfidf.print_topics(-1):
 	print('Topic: {} \nWords: {}'.format(idx,t))
