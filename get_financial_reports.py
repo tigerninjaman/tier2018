@@ -24,8 +24,8 @@ def segmentWords(s):
 	return s.split()
 
 def get_reports():
-	ids = readFile('company_ids.txt')
-	years = range(106,108)
+
+	
 	chrome = webdriver.Chrome()
 	t0 = time.time()
 	t1 = 0

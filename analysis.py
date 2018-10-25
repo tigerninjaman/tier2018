@@ -3,8 +3,8 @@ from tkinter.ttk import Frame, Button, Style, Label, Entry, Checkbutton
 import os, sys, time, string, jieba
 from nltk.stem import WordNetLemmatizer, SnowballStemmer
 import gensim as gs
-from polyglot.detect import Detector
-from pdf_to_txt import convert_pdf_to_txt
+#from polyglot.detect import Detector
+#from pdf_to_txt import convert_pdf_to_txt
 
 
 
@@ -20,7 +20,7 @@ class Analyzer(Frame):
 		self.punc = self.readFile('punctuation.txt')
 		self.lemma = WordNetLemmatizer()
 		self.stemmer = SnowballStemmer('english')
-		self.bigrams = ['hong kong', 'artificial intelligence', 'elon musk', 'xi jinping', 'digital transformation'] #list of words that should be processed as 1 token
+		self.bigrams = ['hong kong', 'artificial intelligence', 'elon musk', 'xi jinping', 'digital transformation', 'internet of things'] #list of words that should be processed as 1 token
 		self.plural = ['blockchain', 'elon musk', 'hong kong','limebike','bitcoin','ofo','gogoro','mobike','tesla','spacex']
 		self.initUI()
 
@@ -73,9 +73,9 @@ class Analyzer(Frame):
 	#The main function. Checks for keyword, filepath, and word2vec model; calls read_add if necessary.
 	def get_analysis(self):
 		keyword = self.keyword_box.get()
-		lang = self.detect_language(keyword)
-		if lang == 'en':
-			keyword = self.lemma.lemmatize(keyword)
+		#lang = self.detect_language(keyword)
+		#if lang == 'en':
+		#	keyword = self.lemma.lemmatize(keyword)
 		if self.directory.get() == '' or self.directory.get() == '/':
 			self.get_filename()
 		elif keyword == '':
@@ -83,8 +83,8 @@ class Analyzer(Frame):
 		else:
 			if self.w2vmodel == None and not self.load_word2Vec():
 				self.read_add_to_corpus()
-			if lang == 'en':
-				keyword = keyword.replace(' ','_').lower()
+			#if lang == 'en':
+			#	keyword = keyword.replace(' ','_').lower()
 			self.get_word2Vec(keyword)
 
 	#Loads the word2vec model (if it exists) in the selected directory.
@@ -103,8 +103,13 @@ class Analyzer(Frame):
 	def get_word2Vec(self,keyword):
 		if self.w2vmodel == None:
 			print("Training new model...")
-			self.w2vmodel = gs.models.Word2Vec(self.doclist, size=100, window=11, min_count=10, workers=64, iter=1000)
-			self.w2vmodel.train(self.doclist,total_examples=len(self.doclist),epochs=10)
+			docno = 1000
+			small_list = self.doclist[:docno]
+			self.w2vmodel = gs.models.Word2Vec(small_list, size=100, window=11, min_count=10, workers=64, iter=1000)
+			while docno < len(self.doclist)
+				small_list = self.doclist[docno:docno+1000]
+				docno += 1000
+				self.w2vmodel.train(small_list,total_examples=len(self.doclist),epochs=10)
 			
 			filename = 'w2vmodel'
 			directory = self.directory.get()
@@ -117,6 +122,7 @@ class Analyzer(Frame):
 		except:
 			print("Sorry, we can't find that word in your selected files.")
 
+
 	#Reads all documents in the directory and processes them into a list for word2vec.
 	def read_add_to_corpus(self):
 		print("Reading files...")
@@ -128,9 +134,10 @@ class Analyzer(Frame):
 				filepath = os.path.join(path,file)
 				if file.startswith('._'):
 					continue
-				if file.find('pdf-2018_') == -1:
+				if file.find('pdf-2018_') == -1 and file.find('pdf-2017_') == -1:
 					continue
 				if file.endswith('.pdf'):
+					continue
 					name = filepath.replace('.pdf','.txt')
 					if os.path.isfile(name):
 						continue
@@ -176,7 +183,7 @@ class Analyzer(Frame):
 	#Processes the text by splitting it into a list and removing stopwords.
 	#For English, also lemmatizes the words.
 	def process(self,text):
-		lang = self.detect_language(text)
+		#lang = self.detect_language(text)
 		text_list = []
 		text = text.lower()
 		text = text.replace('-',' ')

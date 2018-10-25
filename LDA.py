@@ -32,7 +32,7 @@ def segmentWords(s):
 
 stoplist_zh = set(readFile('stopwords-zh.txt'))
 punctuation = set(readFile('punctuation.txt'))
-alphanum = set(['%','.','|','\t','0','1','2','3','4','5','6','7','8','9','a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z'])
+alphanum = set(['%','#','*','=','.','|','\t'])#,'0','1','2','3','4','5','6','7','8','9','a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z'])
 
 def lemmatize_stemming(text):
     return stemmer.stem(WordNetLemmatizer().lemmatize(text, pos='v'))
@@ -61,10 +61,10 @@ for path,dirs,files in os.walk(d):
 	for file in files:
 		if file.startswith('._') or not file.endswith('.txt'):
 			continue
-		if file.find('_2330_') == -1: #file.find('-2017_') == -1 and file.find('-2018_') == -1:
+		if file.find('-2017_') == -1 and file.find('-2018_') == -1:
 			continue
 		try:
-			with open(os.path.join(path,file),'r') as f:
+			with open(os.path.join(path,file),'r',encoding='utf-8') as f:
 				text = f.read()
 		except:
 			continue
