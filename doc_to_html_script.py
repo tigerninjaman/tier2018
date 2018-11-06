@@ -1,7 +1,7 @@
 import subprocess
 import os, time
 
-call_list = ["C:\\Program Files\\LibreOffice\\program\\soffice.exe", "--headless", "--convert-to", "html", "--outdir", "",""] #then outdir indir
+call_list = ["C:\\Program Files\\LibreOffice\\program\\soffice.exe", "--headless", "--converted-to", "html", "--outdir", "",""] #then outdir indir
 for path, dirs, files in os.walk("F:\\tier2018\\Data\\Data from TIER"):
 	for n,file in enumerate(files):
 		print("\rReading texts... " + str(n+1) + "/" + str(len(files)),end="  ")

@@ -17,8 +17,7 @@ class NaiveBayes:
 
   def __init__(self):
     """NaiveBayes initialization"""
-    self.FILTER_STOP_WORDS = False
-    self.stoplist_zh = set(self.readFile('stopwords-zh.txt'))
+    self.stopList = set(self.readFile('stopwords-zh.txt'))
     self.numFolds = 10
 
     # TODO: Add any data structure initialization code here
@@ -96,13 +95,13 @@ class NaiveBayes:
      * in the NaiveBayes class.
      * Returns nothing
     """
-    if self.FILTER_STOP_WORDS == True:
-    	words = self.filterStopWords(words)
-    elif self.BOOLEAN_NB == True:
-    	words = set(words)
-    elif self.BEST_MODEL == True:
-    	words = self.negateWords(words)
-    	words = set(words)
+    # if self.FILTER_STOP_WORDS == True:
+    # 	words = self.filterStopWords(words)
+    # elif self.BOOLEAN_NB == True:
+    # 	words = set(words)
+    # elif self.BEST_MODEL == True:
+    # 	words = self.negateWords(words)
+    words = set(words)
     ex = self.Example()
     ex.klass = klass
     ex.words = words
@@ -343,22 +342,45 @@ def classifyFile(FILTER_STOP_WORDS, BOOLEAN_NB, BEST_MODEL, trainDir, testFilePa
   testFile = classifier.readFile(testFilePath)
   print classifier.classify(testFile)
     
+
+def create_ex_dict():
+  return {}
+  #once I have the data, will read in some sort of file with company IDs as keys and 
+  #example objects (contains the docs as a wordlist and the klass)
+
+def split_ex_dict(i,nfolds,examples):
+  training = {}
+  testing = {}
+  for n,co_id in enumerate(examples):
+    if n > floor(len(examples)*i/nfolds) and n < floor(len(examples)* (i+1)/nfolds):
+      testing[co_id] = examples[co_id]
+    else:
+      training[co_id] = examples[co_id]
+  return training,testing
+
+def train_classifier(classifier,training):
+  for co_id in training:
+    ex = training[co_id]
+    words = ex.words
+    classifier.addExample(ex.klass,words)
+
+classify_docs(classifier):
+  return_dict = {}
+  for doc in directory: #Obviously need to change this.
+    return_dict[doc] = classifier.classify(doc)
+  return return_dict
+
+
 def main():
-  FILTER_STOP_WORDS = False
-  BOOLEAN_NB = False
-  BEST_MODEL = False
-  (options, args) = getopt.getopt(sys.argv[1:], 'fbm')
-  if ('-f','') in options:
-    FILTER_STOP_WORDS = True
-  elif ('-b','') in options:
-    BOOLEAN_NB = True
-  elif ('-m','') in options:
-    BEST_MODEL = True
-  
-  if len(args) == 2 and os.path.isfile(args[1]):
-    classifyFile(FILTER_STOP_WORDS, BOOLEAN_NB, BEST_MODEL, args[0], args[1])
-  else:
-    test10Fold(args, FILTER_STOP_WORDS, BOOLEAN_NB, BEST_MODEL)
+  nfolds = 10
+  examples = create_ex_dict()
+  for i in range(nfolds):
+    training, testing = split_ex_dict(i,nfolds,examples)
+    classifier = NaiveBayes()
+    train_classifier(classifier,training)
+    results_dict = classify_docs(classifier)
+    test_classifier(classifier,testing)
+  return 0
 
 if __name__ == "__main__":
     main()

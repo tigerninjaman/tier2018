@@ -1,24 +1,32 @@
+import subprocess
 import os
-from pdf_to_txt import convert_pdf_to_txt
+from bs4 import BeautifulSoup as bs
+import time
 
-for path, dirs, files in os.walk('C:\\Users\\windows\\Desktop\\big'):
-	for n,file in enumerate(files):
-		text = ""
-		print("\rReading texts... " + str(n+1) + "/" + str(len(files)) + " ",end="")
-		filepath = os.path.join(path,file)
+d = 'F:\\docs'
+
+for path, dirs, files in os.walk(d):
+	for file in files:
 		if file.startswith('._'):
 			continue
-		if file.endswith('.pdf'):
-			name = filepath.replace('.pdf','.txt')
-			if os.path.isfile(name):
+		filepath = os.path.join(path,file)
+		if file.endswith('.doc') or file.endswith('.docx'):
+			html_name = filepath.replace('.docx','.html')
+			html_name = html_name.replace('.doc','.html')
+			print(html_name)
+			if os.path.isfile(html_name):
 				continue
-			try:
-				print("\rReading texts... " + str(n+1) + "/" + str(len(files)) + " (pdfs take a while) ",end="")
-				text = convert_pdf_to_txt(filepath)
-				print('\n1')
-				with open(name,'w',encoding='utf-8') as f:
-					print('2')
-					f.write(text)
-			except:
-				print('\r'+file + ' could not be opened. Continuing.')
-				continue
+			else:
+				call_list = [".\\C:\\Program Files\\LibreOffice\\program\\swriter", "--headless", "--converted-to", "html", "--outdir", filepath,html_name] #then outdir indir
+				subprocess.call(call_list)
+		elif file.endswith('.html'):
+			with open(filepath,'rb') as f:
+				html = f.read()
+			soup = bs(html,'lxml')
+			t_list = soup.findAll('p')
+			text = ""
+			for p in t_list:
+				text = text + p.text
+			newname = filepath.replace('html','txt')
+			with open(newname,'w') as f:
+				f.write(text)

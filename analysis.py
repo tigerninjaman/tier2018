@@ -103,15 +103,10 @@ class Analyzer(Frame):
 	def get_word2Vec(self,keyword):
 		if self.w2vmodel == None:
 			print("Training new model...")
-			docno = 1000
-			small_list = self.doclist[:docno]
-			self.w2vmodel = gs.models.Word2Vec(small_list, size=100, window=11, min_count=10, workers=64, iter=1000)
-			while docno < len(self.doclist)
-				small_list = self.doclist[docno:docno+1000]
-				docno += 1000
-				self.w2vmodel.train(small_list,total_examples=len(self.doclist),epochs=10)
+			self.w2vmodel = gs.models.Word2Vec(self.doclist, size=100, window=11, min_count=10, workers=64, iter=1000)
+			self.w2vmodel.train(self.doclist,total_examples=len(self.doclist),epochs=10)
 			
-			filename = 'w2vmodel'
+			filename = 'w2vmodel_onlyF04'
 			directory = self.directory.get()
 			path = os.path.join(directory,filename)
 			self.w2vmodel.save(path)
@@ -135,6 +130,8 @@ class Analyzer(Frame):
 				if file.startswith('._'):
 					continue
 				if file.find('pdf-2018_') == -1 and file.find('pdf-2017_') == -1:
+					continue
+				if file.find('F04') == -1:
 					continue
 				if file.endswith('.pdf'):
 					continue

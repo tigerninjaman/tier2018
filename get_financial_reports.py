@@ -9,34 +9,27 @@ from selenium import webdriver
 import os
 
 
-#Readfile and segmentwords taken from cs124, for reading stopword files. 
-#Written in python 2 which is why it's weird.
 def readFile(fileName):
-	contents = []
-	f = open(fileName,encoding='utf-8')
-	for line in f:
-		contents.append(line)
-	f.close()
-	result = segmentWords('\n'.join(contents)) 
-	return result
+	with open(fileName,'r',encoding='utf-8') as f:
+		contents = f.read()
+	return contents.split('\n')
 
-def segmentWords(s):
-	return s.split()
 
 def get_reports():
-
-	
 	chrome = webdriver.Chrome()
+	ids = readFile('D:\\code\\company_ids.txt')
+	years = [105,106,107]
 	t0 = time.time()
 	t1 = 0
 	for  n,idno in enumerate(ids):
-		if n < 1589:
+		if n < 1313:
 			continue
 		print('ID no.: ' + str(n) + '/' + str(len(ids)))
 		for y in years:
-			time.sleep(5)
+			if not chrome:
+				chrome = webdriver.Chrome()
+			time.sleep(3)
 			url = url1 + str(idno) + sep + str(y) + url2
-			print('1')
 			try:
 				chrome.get(url)
 			except:
@@ -58,13 +51,12 @@ def get_reports():
 					print("The website has banned you for too many requests.")
 					return
 			print('2')
-			link_elements_list = chrome.find_elements_by_partial_link_text('.pdf')
+			link_elements_list = chrome.find_elements_by_partial_link_text('F04')
 			if not link_elements_list:
 				continue
 			no_links = len(link_elements_list)
 			print('3')
 			for i in range(no_links):
-				time.sleep(3)
 				html = chrome.page_source
 				sleep_time = 0
 				while html.find('THE PAGE CANNOT BE ACCESSED!') != -1 or html.find('查詢過量') != -1:
@@ -80,13 +72,17 @@ def get_reports():
 						chrome.quit()
 						print("The website has banned you for too many requests.")
 						return
-				link_elements_list = chrome.find_elements_by_partial_link_text('.pdf')
+				link_elements_list = chrome.find_elements_by_partial_link_text('F04')
 				try:
 					l = link_elements_list[i]
 				except:
 					print('i: '+ str(i))
 					break
 				l.click()
+				if len(chrome.window_handles) == 1:
+					print('Looks like a .zip file was downloaded.')
+					continue
+				time.sleep(1)
 				print('4')
 				try:
 					chrome.switch_to_window(chrome.window_handles[1])
@@ -108,10 +104,7 @@ def get_reports():
 					a = soup.find('a')
 				if a != None:
 					link = a['href']
-					print('5')
 					download_pdf(link)
-					print('6')
-					print("Downloaded " + str(i) + '/' + str(no_links))
 				chrome.close()
 				chrome.switch_to_window(chrome.window_handles[0])
 				chrome.get(url)
@@ -126,11 +119,11 @@ def download_pdf(link):
 	filename = sterilize_link(link)
 	r = requests.get(link,allow_redirects=True,timeout=10)
 	try:
-		with open('reports/{}.pdf'.format(filename),'wb') as output:
+		with open('D:/reports/{}.pdf'.format(filename),'wb') as output:
 			output.write(r.content)
 	except:
-		os.makedirs('reports')
-		with open('reports/{}.pdf'.format(filename),'wb') as output:
+		os.makedirs('D:/reports')
+		with open('D:/reports/{}.pdf'.format(filename),'wb') as output:
 			output.write(r.content)
 
 #Sterilizes the link so it can be used as a (unique) filename.
