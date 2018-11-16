@@ -14,7 +14,7 @@ for path, dirs, files in os.walk('F:\\reports'):
 				continue
 			try:
 				text = convert_pdf_to_txt(filepath)
-				with open(name,'w',encoding='utf-8') as f:
+				with open(name,'w',encoding='utf-16') as f:
 					f.write(text)
 			except Exception as e:
 				print(repr(e))

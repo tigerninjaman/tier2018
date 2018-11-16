@@ -14,18 +14,36 @@ def readFile(fileName):
 		contents = f.read()
 	return contents.split('\n')
 
+def read_wiped_dict():
+	wiped = 'D:/code/wiped_yearco.txt'
+	with open(wiped,'r') as f:
+		wiped_txt = f.read()
+	wiped_list = wiped_txt.split('\n')
+	print('list ' +str(len(wiped_list)))
+	co_year_dict = {}
+	for w in wiped_list:
+		year = w.split(':')[1]
+		co_id = w.split(':')[0]
+		if co_id not in co_year_dict:
+			co_year_dict[co_id] = []
+		co_year_dict[co_id].append(year)
+	return co_year_dict
 
 def get_reports():
 	chrome = webdriver.Chrome()
-	ids = readFile('D:\\code\\company_ids.txt')
-	years = [105,106,107]
+	# ids = readFile('D:\\code\\company_ids.txt')
+	# years = [105,106,107]
+	co_year_dict = read_wiped_dict()
 	t0 = time.time()
 	t1 = 0
-	for  n,idno in enumerate(ids):
-		if n < 1313:
-			continue
-		print('ID no.: ' + str(n) + '/' + str(len(ids)))
-		for y in years:
+	for idno in co_year_dict:
+		for y in co_year_dict[idno]:
+
+	# for  n,idno in enumerate(ids):
+	# 	if n < 1313:
+	# 		continue
+	# 	print('ID no.: ' + str(n) + '/' + str(len(ids)))
+	# 	for y in years:
 			if not chrome:
 				chrome = webdriver.Chrome()
 			time.sleep(3)

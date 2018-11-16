@@ -38,39 +38,45 @@ class NaiveBayes:
 		if self.ncat1docs == 0:
 			cat1prob = 0
 		else:
-			cat1prob = math.log(float(self.ncat1docs) / float(self.ncat1docs + self.ncat2docs + self.ncat3docs + self.ncat4docs))
+			cat1prob = math.log(float(self.ncat1docs) / float(self.ncat1docs + self.ncat2docs + self.ncat3docs)) # + self.ncat4docs))
 		if self.ncat2docs == 0:
 			cat2prob = 0
 		else:
-			cat2prob = math.log(float(self.ncat2docs) / float(self.ncat1docs + self.ncat2docs + self.ncat3docs + self.ncat4docs))
+			cat2prob = math.log(float(self.ncat2docs) / float(self.ncat1docs + self.ncat2docs + self.ncat3docs)) # + self.ncat4docs))
 		if self.ncat3docs == 0:
 			cat3prob = 0
 		else:
-			cat3prob = math.log(float(self.ncat3docs) / float(self.ncat1docs + self.ncat2docs + self.ncat3docs + self.ncat4docs))
+			cat3prob = math.log(float(self.ncat3docs) / float(self.ncat1docs + self.ncat2docs + self.ncat3docs)) # + self.ncat4docs))
 		#cat4prob = math.log(float(self.ncat4docs) / float(self.ncat1docs + self.ncat2docs + self.ncat3docs + self.ncat4docs))
 
 		n1words = sum(self.cat1words.values())
 		n2words = sum(self.cat2words.values())
 		n3words = sum(self.cat3words.values())
 		#n4words = sum(self.cat4words.values())
+		#print('cat1words: ' + str(n1words) + '\ncat2words: ' + str(n2words) + '\ncat3words: ' + str(n3words))
 
 		for word in words:
 			if word in self.vocabulary:
+				#print(word)
 				cat1prob = cat1prob + math.log(float(self.cat1words.get(word,0) + alpha) / float(n1words + len(self.vocabulary)))
 				cat2prob = cat2prob + math.log(float(self.cat2words.get(word,0) + alpha) / float(n2words + len(self.vocabulary)))
 				cat3prob = cat3prob + math.log(float(self.cat3words.get(word,0) + alpha) / float(n3words + len(self.vocabulary)))
 				#cat4prob = cat4prob + math.log(float(self.cat4words.get(word,0) + alpha) / float(n4words + len(self.vocabulary)))
 		maxprob = max(cat1prob,cat2prob,cat3prob) #,cat4prob)
+		print('cat1prob: ' + str(cat1prob) + '\ncat2prob: ' + str(cat2prob) + '\ncat3prob: ' + str(cat3prob))
 		if maxprob == cat1prob:
-			return 1
+			print('Guessing category 1\n')
+			return '1'
 		elif maxprob == cat2prob:
-			return 2
+			print('Guessing category 2\n')
+			return '2'
 		elif maxprob == cat3prob:
-			return 3
+			print('Guessing category 3\n')
+			return '3'
 		# elif maxprob == cat4prob:
 		# 	return 4
 		else:
-			return -1
+			return None
 
 	def addExample(self, example): #klass, words):
 		# if self.FILTER_STOP_WORDS == True:
@@ -85,13 +91,13 @@ class NaiveBayes:
 		# ex.words = words
 		for word in example.words:
 			self.vocabulary.add(word)
-			if example.klass == 1: #High
+			if example.klass == '1': #High
 				self.ncat1docs += 1
 				self.cat1words[word] = self.cat1words.get(word,0) + 1
-			elif example.klass == 2: #Mid
+			elif example.klass == '2': #Mid
 				self.ncat2docs += 1
 				self.cat2words[word] = self.cat2words.get(word,0) + 1
-			elif example.klass == 3: #Low
+			elif example.klass == '3': #Low
 				self.ncat3docs += 1
 				self.cat3words[word] = self.cat3words.get(word,0) + 1
 			# else:
@@ -111,6 +117,7 @@ class NaiveBayes:
 		for ex in examples:
 			words = ex.words
 			guess = self.classify(words)
+			print('klass: ' + ex.klass + ' \nGuess: ' + guess)
 			if ex.klass == guess:
 				accuracy += 1.0
 		return float(float(accuracy) / float(len(examples)))
@@ -155,9 +162,13 @@ def process(text):
 def traintestsplits(fold, numfolds, examples):
 	print('Train/test splits')
 	test_examples = []
-	test_examples.append(examples[0])
-	test_examples.append(examples[len(examples) - 1])
-	test_examples.append(examples[17])
+	test_examples.append(examples[fold*2])
+	test_examples.append(examples[fold*2+1])
+	test_examples.append(examples[fold*2+15])
+	test_examples.append(examples[fold*2+16])
+	test_examples.append(examples[len(examples) - 1 - fold*2])
+	test_examples.append(examples[len(examples) - 2 - fold*2])	
+	test_examples.append(examples[len(examples) - 3 - fold*2])
 	# test_startindex = math.floor(len(examples)/numfolds)*fold
 	# len_fold = max(math.floor(len(examples)/numfolds),1)
 	# test_examples = examples[test_startindex:test_startindex+len_fold]
@@ -190,7 +201,8 @@ def full_test(examples,folds):
 		accuracy = nb.test(test)
 		print('Fold ' + str(i + 1) + ' accuracy: ' + str(accuracy))
 		avg_accuracy += accuracy
-		for co in co_ids:
+		for n,co in enumerate(co_ids):
+			print('\rGuessing...' + str(n) + '/' + str(len(co_ids)))
 			guess_dict[co].append(nb.classify(get_financial_reports(co))) #TODO: Re-check that this is correct
 	avg_accuracy = avg_accuracy / folds
 	print('Average accuracy over ' + str(folds) + ' folds: ' + str(avg_accuracy))
@@ -208,7 +220,7 @@ def read_exs(directory):
 	co_ids_1 = sh.col(1)
 	co_ids_2 = sh.col(5)
 	co_ids_3 = sh.col(9)
-	print('High: ' + str(len(co_ids_1)) + '\nMid: ' + str(len(co_ids_2)) + '\nLow: ' + str(len(co_ids_3)))
+	#print('High: ' + str(len(co_ids_1)) + '\nMid: ' + str(len(co_ids_2)) + '\nLow: ' + str(len(co_ids_3)))
 	examples = []
 	print('Getting High reports...')
 	for i in co_ids_1:
@@ -220,6 +232,7 @@ def read_exs(directory):
 			# print(len(ex.words))
 			examples.append(ex)
 	print('Getting Mid reports...')
+	print(len(examples))
 	for j in co_ids_2:
 		if j.value:
 			ex = Example()
@@ -228,20 +241,23 @@ def read_exs(directory):
 			ex.words = get_financial_reports(ex.co_id)
 			examples.append(ex)
 	print('Getting Low reports...')
-	for k in co_ids_3:
+	print(len(examples))
+	for n,k in enumerate(co_ids_3):
+		# if n==14:
+		# 	break
 		if k.value:
 			ex = Example()
 			ex.klass = '3'
 			ex.co_id = str(int(k.value))
 			ex.words = get_financial_reports(ex.co_id)
 			examples.append(ex)
-	# print(len(examples))
+	print(len(examples))
 	return examples
 
 def main():
 	print('main')
 	exdir = '/Volumes/half_ExFAT/training_DG.xlsx'
-	folds = 1
+	folds = 7
 	examples = read_exs(exdir)
 	full_test(examples,folds) #TODO: don't hardcode 
 	return 0

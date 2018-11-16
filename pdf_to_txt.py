@@ -16,7 +16,7 @@ def save_pdf_link(url,filename):
 def convert_pdf_to_txt(path):
     rsrcmgr = PDFResourceManager()
     retstr = io.StringIO()
-    codec = 'utf-8'
+    codec = 'utf-16'
     laparams = LAParams()
     device = TextConverter(rsrcmgr, retstr, codec=codec, laparams=laparams)
     fp = open(path, 'rb')
