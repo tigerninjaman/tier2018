@@ -1,7 +1,7 @@
 import os
 from pdf_to_txt import convert_pdf_to_txt
 
-for path, dirs, files in os.walk('F:\\reports'):
+for path, dirs, files in os.walk('/Volumes/half_ExFAT/reports_full/unconverted'):
 	for n,file in enumerate(files):
 		print('\r' + str(n+1) + '/' + str(len(files)),end="")
 		text = ""
