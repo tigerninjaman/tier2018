@@ -15,7 +15,7 @@ def readFile(fileName):
 	return contents.split('\n')
 
 def read_wiped_dict():
-	wiped = 'D:/code/wiped_yearco.txt'
+	wiped = 'F:/code/wiped_yearco.txt'
 	with open(wiped,'r') as f:
 		wiped_txt = f.read()
 	wiped_list = wiped_txt.split('\n')
@@ -137,11 +137,11 @@ def download_pdf(link):
 	filename = sterilize_link(link)
 	r = requests.get(link,allow_redirects=True,timeout=10)
 	try:
-		with open('D:/reports/{}.pdf'.format(filename),'wb') as output:
+		with open('F:/demo/{}.pdf'.format(filename),'wb') as output:
 			output.write(r.content)
 	except:
-		os.makedirs('D:/reports')
-		with open('D:/reports/{}.pdf'.format(filename),'wb') as output:
+		os.makedirs('F:/demo')
+		with open('F:/demo/{}.pdf'.format(filename),'wb') as output:
 			output.write(r.content)
 
 #Sterilizes the link so it can be used as a (unique) filename.

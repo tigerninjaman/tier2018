@@ -3,6 +3,11 @@ import os
 from bs4 import BeautifulSoup as bs
 import time
 
+# Uses LibreOffice to automatically convert .doc and .docx files to html, 
+# which are then easily converted to .txt files using BeautifulSoup.
+# solution from https://stackoverflow.com/questions/51943121/using-olefile-to-extract-text-from-word-doc
+# If you have Word and are working on a Windows machine, there is also a way to automatically use Word. see the above link
+
 d = 'F:\\docs'
 
 for path, dirs, files in os.walk(d):

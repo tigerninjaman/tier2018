@@ -136,7 +136,7 @@ class Company_extractor(Frame):
 				text = ""
 				print("\rReading texts... " + str(n+1) + "/" + str(len(files)),end="  ")
 				filepath = os.path.join(path,file)
-				if file.startswith('._'):
+				if file.startswith('._') or not file.endswith('.txt'):
 					continue
 				if file.endswith('.pdf'):
 					name = filepath.replace('.pdf','.txt')

@@ -129,8 +129,6 @@ class Analyzer(Frame):
 				filepath = os.path.join(path,file)
 				if file.startswith('._'):
 					continue
-				if file.find('pdf-2018_') == -1 and file.find('pdf-2017_') == -1:
-					continue
 				if file.find('F04') == -1:
 					continue
 				if file.endswith('.pdf'):
