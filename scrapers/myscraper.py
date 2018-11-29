@@ -8,7 +8,7 @@
 #			techcrunch doesn't have any 'pages' of results, so we can only get ~20 results max.
 #
 #			There seems to be a large potential for bugs if chrome doesn't load fast enough. I don't know
-#			how to test this, and implementing seems tedious and like I'd be trying to fix a leak in the dark.
+#			how to test this, and implementing seems tedious and I'd be trying to fix a leak in the dark.
 
 
 from bs4 import BeautifulSoup as BS
@@ -60,7 +60,7 @@ def get_TC_art_text(link):
 	return text
 
 #Gets all resultant article links for a given search term on engadget.com.
-#Opens a browser via selenium's webdriver and clicks on the 'Show more results' 30 times.
+#Opens a browser via selenium's webdriver and clicks on the 'Show more results' for every page.
 def get_EGT_art_links(term,pages,chrome):
 	link_list = []
 	url = egt_search_addr + term

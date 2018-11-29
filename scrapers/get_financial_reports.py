@@ -33,7 +33,7 @@ def get_reports():
 	chrome = webdriver.Chrome()
 	# ids = readFile('D:\\code\\company_ids.txt')
 	# years = [105,106,107]
-	co_year_dict = read_wiped_dict()
+	# co_year_dict = read_wiped_dict()
 	t0 = time.time()
 	t1 = 0
 	for idno in co_year_dict:
